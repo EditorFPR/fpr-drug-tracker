@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fiji Drug Trade Tracker, 2000–2026 · Fiji Political Review</title>
+<meta name="description" content="A documented chronology of drug seizures, trafficking operations, and institutional integrity events in Fiji and the Pacific, 2000 to present.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #f4f1ee;
+    --white: #ffffff;
+    --ink: #1a2332;
+    --ink-dim: #4a5568;
+    --ink-faint: #a0aec0;
+    --blue: #2c5282;
+    --blue-light: #ebf4ff;
+    --red: #c8453a;
+    --red-light: #fff5f5;
+    --amber: #b7791f;
+    --amber-light: #fffff0;
+    --green: #276749;
+    --green-light: #f0fff4;
+    --purple: #553c9a;
+    --purple-light: #faf5ff;
+    --border: #e2e8f0;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', sans-serif; background: var(--cream); color: var(--ink); padding: 40px 24px 80px; max-width: 980px; margin: 0 auto; font-size: 15px; line-height: 1.6; }
+
+  .tracker-head { margin-bottom: 40px; border-bottom: 2px solid var(--ink); padding-bottom: 28px; }
+  .kicker { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 500; letter-spacing: .18em; text-transform: uppercase; color: var(--blue); margin-bottom: 12px; }
+  h1.title { font-family: 'Playfair Display', serif; font-size: 48px; font-weight: 900; line-height: 1.08; color: var(--ink); margin-bottom: 14px; }
+  h1.title .em { color: var(--red); }
+  .subhead { font-size: 16px; color: var(--ink-dim); max-width: 640px; line-height: 1.55; margin-bottom: 18px; }
+  .updated-tag { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-family: 'JetBrains Mono', monospace; color: var(--green); background: var(--green-light); border: 1px solid #c6f6d5; padding: 4px 10px; border-radius: 4px; }
+  .updated-tag::before { content: "●"; font-size: 8px; }
+
+  .summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 32px; }
+  .stat-card { background: var(--white); border: 1px solid var(--border); border-radius: 8px; padding: 16px 18px; box-shadow: var(--shadow); }
+  .stat-num { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 700; color: var(--ink); line-height: 1; margin-bottom: 4px; }
+  .stat-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-faint); }
+
+  .controls { background: var(--white); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 28px; box-shadow: var(--shadow); }
+  .controls-label { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-dim); margin-bottom: 10px; }
+  .controls-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 14px; }
+  .controls-row:last-child { margin-bottom: 0; }
+  .filter-btn { font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 500; padding: 5px 12px; border-radius: 20px; border: 1.5px solid var(--border); background: var(--white); color: var(--ink-dim); cursor: pointer; transition: all .15s; white-space: nowrap; }
+  .filter-btn:hover { border-color: var(--blue); color: var(--blue); }
+  .filter-btn.active { background: var(--blue); border-color: var(--blue); color: #fff; }
+  .filter-btn.active.red { background: var(--red); border-color: var(--red); }
+  .filter-btn.active.amber { background: var(--amber); border-color: var(--amber); }
+  .filter-btn.active.green { background: var(--green); border-color: var(--green); }
+  .filter-btn.active.purple { background: var(--purple); border-color: var(--purple); }
+  .search-wrap { position: relative; flex: 1; min-width: 200px; }
+  .search-input { width: 100%; padding: 8px 12px 8px 34px; border: 1.5px solid var(--border); border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 13px; color: var(--ink); background: var(--cream); outline: none; transition: border-color .15s; }
+  .search-input:focus { border-color: var(--blue); background: var(--white); }
+  .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--ink-faint); font-size: 14px; }
+  .toggle-btn { font-size: 12px; font-weight: 500; padding: 6px 14px; border-radius: 6px; border: 1.5px solid var(--border); background: var(--white); color: var(--ink-dim); cursor: pointer; transition: all .15s; }
+  .toggle-btn.on { background: var(--green-light); border-color: var(--green); color: var(--green); }
+  .reset-btn { font-size: 12px; font-weight: 500; padding: 6px 14px; border-radius: 6px; border: 1.5px solid var(--border); background: transparent; color: var(--ink-faint); cursor: pointer; transition: all .15s; margin-left: auto; }
+  .reset-btn:hover { color: var(--red); border-color: var(--red); }
+
+  .results-meta { font-size: 12px; color: var(--ink-faint); margin-bottom: 18px; font-family: 'JetBrains Mono', monospace; }
+  .results-meta strong { color: var(--ink-dim); }
+
+  .timeline { position: relative; }
+  .timeline::before { content: ''; position: absolute; left: 112px; top: 0; bottom: 0; width: 2px; background: var(--border); }
+  .event { display: grid; grid-template-columns: 110px 1fr; gap: 0 20px; margin-bottom: 20px; }
+  .event.hidden { display: none; }
+  .event-date { text-align: right; padding-right: 20px; padding-top: 14px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-faint); line-height: 1.4; }
+  .event-date .year { font-size: 13px; font-weight: 500; color: var(--ink-dim); display: block; }
+  .event-card { background: var(--white); border: 1px solid var(--border); border-radius: 10px; padding: 16px 20px; box-shadow: var(--shadow); position: relative; transition: box-shadow .15s; }
+  .event-card:hover { box-shadow: var(--shadow-md); }
+  .event-card.anchor { border-left: 3px solid var(--red); }
+  .event-card::before { content: ''; position: absolute; left: -27px; top: 20px; width: 10px; height: 10px; border-radius: 50%; background: var(--border); border: 2px solid var(--white); box-shadow: 0 0 0 2px var(--border); }
+  .event-card.anchor::before { background: var(--red); box-shadow: 0 0 0 2px var(--red); }
+
+  .card-top { display: flex; align-items: flex-start; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+  .badge { font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; padding: 2px 8px; border-radius: 3px; white-space: nowrap; }
+  .badge-drug-methamphetamine { background: #fef3c7; color: #92400e; }
+  .badge-drug-cocaine { background: #e0e7ff; color: #3730a3; }
+  .badge-drug-cannabis { background: #d1fae5; color: #065f46; }
+  .badge-drug-heroin { background: #fce7f3; color: #9d174d; }
+  .badge-drug-multi { background: #f3f4f6; color: #374151; }
+  .badge-severity-critical { background: var(--red-light); color: var(--red); }
+  .badge-severity-major { background: #fff7ed; color: #c2410c; }
+  .badge-severity-moderate { background: #fefce8; color: #854d0e; }
+  .badge-severity-integrity { background: var(--purple-light); color: var(--purple); }
+  .badge-severity-deployment { background: var(--blue-light); color: var(--blue); }
+  .badge-pending { background: #fffbeb; color: var(--amber); border: 1px solid #fde68a; }
+  .badge-verified { background: var(--green-light); color: var(--green); }
+
+  .event-title { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 700; color: var(--ink); line-height: 1.3; margin-bottom: 6px; }
+  .event-desc { font-size: 13px; color: var(--ink-dim); line-height: 1.55; margin-bottom: 10px; }
+  .card-meta { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .meta-item { font-size: 11px; color: var(--ink-faint); font-family: 'JetBrains Mono', monospace; display: flex; align-items: center; gap: 4px; }
+  .meta-item strong { color: var(--ink-dim); }
+  .qty-pill { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 500; padding: 2px 8px; background: var(--blue-light); color: var(--blue); border-radius: 4px; }
+
+  .sources { margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border); }
+  .sources-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-faint); margin-bottom: 4px; }
+  .source-link { font-size: 11px; color: var(--blue); text-decoration: none; display: block; line-height: 1.6; }
+  .source-link:hover { text-decoration: underline; }
+  .source-text { font-size: 11px; color: var(--ink-dim); display: block; line-height: 1.6; }
+
+  .no-results { display: none; padding: 40px; text-align: center; color: var(--ink-faint); font-style: italic; background: var(--white); border: 1px dashed var(--border); border-radius: 10px; }
+  .no-results.show { display: block; }
+
+  footer.tracker-foot { margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border); font-size: 12px; color: var(--ink-dim); line-height: 1.6; }
+  .methodology { background: var(--white); border: 1px solid var(--border); border-radius: 8px; padding: 16px 20px; margin-top: 16px; }
+  .methodology h3 { font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 700; color: var(--ink); margin-bottom: 8px; }
+  .methodology p { margin-bottom: 6px; font-size: 12px; color: var(--ink-dim); line-height: 1.55; }
+  .foot-mark { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: var(--blue); font-weight: 700; }
+
+  @media (max-width: 760px) {
+    body { padding: 22px 14px 50px; }
+    h1.title { font-size: 32px; }
+    .summary { grid-template-columns: repeat(2, 1fr); }
+    .timeline::before { display: none; }
+    .event { grid-template-columns: 1fr; gap: 6px; }
+    .event-date { text-align: left; padding-right: 0; padding-top: 0; padding-left: 2px; }
+    .event-card::before { display: none; }
+  }
+</style>
+</head>
+<body>
+<main>
+
+<header class="tracker-head">
+  <div class="kicker">FPR · Drug Intelligence Tracker</div>
+  <h1 class="title">Fiji Drug Trade Timeline, <span class="em">2000–2026</span></h1>
+  <p class="subhead">A documented chronology of maritime seizures, trafficking operations, cultivation raids, and institutional integrity events in Fiji and the Pacific. Every entry carries a source. Unverified entries are flagged.</p>
+  <span class="updated-tag">Updated 10 June 2026</span>
+</header>
+
+<div class="summary" id="summaryStats"></div>
+
+<div class="controls">
+  <div class="controls-label">Filter by drug type</div>
+  <div class="controls-row" id="drugFilters"></div>
+  <div class="controls-label">Filter by severity / type</div>
+  <div class="controls-row" id="severityFilters">
+    <button class="filter-btn active" data-filter="severity" data-val="all">All</button>
+    <button class="filter-btn" data-filter="severity" data-val="critical" data-color="red">Critical</button>
+    <button class="filter-btn" data-filter="severity" data-val="major" data-color="amber">Major</button>
+    <button class="filter-btn" data-filter="severity" data-val="moderate" data-color="green">Moderate</button>
+    <button class="filter-btn" data-filter="severity" data-val="integrity" data-color="purple">Integrity / Institutional</button>
+    <button class="filter-btn" data-filter="severity" data-val="deployment" data-color="">Deployment / Response</button>
+  </div>
+  <div class="controls-row">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" class="search-input" id="searchInput" placeholder="Search location, keyword, name, year…">
+    </div>
+    <button class="toggle-btn" id="verifiedToggle">Verified only: OFF</button>
+    <button class="toggle-btn" id="sortToggle">Sort: Newest first</button>
+    <button class="reset-btn" id="resetBtn">Reset all</button>
+  </div>
+</div>
+
+<div class="results-meta" id="resultsMeta"></div>
+<div class="timeline" id="timeline"></div>
+<div class="no-results" id="noResults">No events match your current filters.</div>
+
+<footer class="tracker-foot">
+  <span class="foot-mark">Fiji Political Review · fijipoliticalreview.com</span>
+  <div class="methodology">
+    <h3>Truth Protocol — Methodology</h3>
+    <p>Every entry must carry at least one named source before it is treated as verified. Entries without a confirmed source carry a visible "Source pending" badge and are excluded from aggregate claims in FPR reporting.</p>
+    <p>Quantity figures use the most authoritative available figure: forensic/court-confirmed preferred over police press release. Where figures differ between sources, both are noted. Drug type attribution follows court charges or forensic confirmation, not preliminary field testing alone.</p>
+    <p>Institutional integrity events (corruption, officer charges, unit dissolutions) are included because they are material to governance analysis — each reflects an official charge, parliamentary statement, or court record. Anchor events (red border) are the defining inflection points in Fiji's trafficking escalation.</p>
+    <p>This tracker does not constitute legal opinion. Case status reflects the most recent verified information available; outcomes change.</p>
+  </div>
+</footer>
+
+</main>
+<script>
+const EVENTS = [
+  {
+    id: "e001",
+    date: "2000",
+    year: 2000, month: 0,
+    location: "Suva",
+    region: "Central",
+    drugType: "Heroin",
+    quantityKg: 357,
+    quantityDisplay: "357 kg",
+    severity: "critical",
+    title: "Operation Logrunner — 357 kg heroin warehouse, Suva",
+    description: "Fiji Police uncovered a 357 kg heroin warehouse in Suva in what became known as Operation Logrunner. This is the baseline anchor event for Fiji's maritime drug trafficking timeline: the Emergence phase, 2000–2004.",
+    sources: [{ label: "FPR trafficking infographic / Fiji Police records", url: null }],
+    verified: true,
+    isAnchor: true
+  },
+  {
+    id: "e002",
+    date: "2004",
+    year: 2004, month: 0,
+    location: "Suva industrial estate",
+    region: "Central",
+    drugType: "Methamphetamine",
+    quantityKg: 5,
+    quantityDisplay: "5 kg seized + 700 L precursors (capacity: ~1 tonne)",
+    severity: "major",
+    title: "Super-lab raid — Hong Kong syndicate, Suva industrial estate",
+    description: "Police raided a methamphetamine super-lab in a Suva industrial estate, seizing 5 kg of meth and approximately 700 litres of precursor chemicals. The lab had estimated production capacity of roughly 1 tonne. Linked to a Hong Kong syndicate (Operation Crystal Sun). Marks the start of the Consolidation phase.",
+    sources: [{ label: "Op. Crystal Sun / FPR infographic annotation", url: null }],
+    verified: true,
+    isAnchor: false
+  },
+  {
+    id: "e003",
+    date: "2013–14",
+    year: 2013, month: 0,
+    location: "Vanuatu / Tonga / Pacific",
+    region: "Regional",
+    drugType: "Cocaine",
+    quantityKg: 950,
+    quantityDisplay: "~950 kg combined (Vanuatu 750 kg + Tonga 200 kg)",
+    severity: "major",
+    title: "Yacht route opens — Vanuatu and Tonga seizures establish Pacific cocaine corridor",
+    description: "Yacht Raj (Vanuatu, ~750 kg) and a Tonga interception (~200 kg) establish the regional sea-route for cocaine through the Pacific. These seizures confirmed the yacht corridor as operational and set the trafficking geography that Fiji was subsequently incorporated into.",
+    sources: [{ label: "FPR trafficking infographic / regional seizure records", url: null }],
+    verified: false,
+    isAnchor: false
+  },
+  {
+    id: "e004",
+    date: "2018",
+    year: 2018, month: 0,
+    location: "Denarau Marina, Nadi / Lau Group",
+    region: "Western / Lau",
+    drugType: "Cocaine",
+    quantityKg: 12.9,
+    quantityDisplay: "12.9 kg (Denarau confirmed); first traces in Lau Group",
+    severity: "major",
+    title: "First cocaine on Fiji soil — Denarau marina and first traces in Lau Group",
+    description: "Cocaine recovered at Denarau Marina, the tourist-yacht hub near Nadi: 12.9 kg confirmed. In the same year, first traces of cocaine were documented in the Lau Group, marking the first time trafficking reached Fiji's outer maritime islands. The FPR infographic labels this: 'trafficking reaches outer islands.' Both events are linked to the yacht corridor established 2013–14.",
+    sources: [{ label: "FPR trafficking infographic — '2018 · Yachts reach Fiji' annotation", url: null }],
+    verified: false,
+    isAnchor: true
+  },
+  {
+    id: "e005",
+    date: "2019–20",
+    year: 2019, month: 0,
+    location: "Pacific-wide / Fiji",
+    region: "National",
+    drugType: "Multi",
+    quantityKg: null,
+    quantityDisplay: "~100 kg regional; 113 meth cases (Fiji, 2020)",
+    severity: "moderate",
+    title: "Pacific yacht surge — regional seizures ~100 kg; Fiji meth cases reach 113",
+    description: "Combined yacht-related cocaine seizures across Pacific jurisdictions reach approximately 100 kg, confirming the yacht corridor as region-wide. Fiji's domestic methamphetamine caseload rises to 113 cases in 2020, establishing the verified baseline used in FPR case-count analysis. The 3.7× rise to 366 cases by 2024 is calculated from this figure.",
+    sources: [{ label: "FPR trafficking infographic; Fiji Village June 2025 (366 cases / 100 baseline)", url: null }],
+    verified: false,
+    isAnchor: false
+  },
+  {
+    id: "e006",
+    date: "2021–23",
+    year: 2021, month: 0,
+    location: "Fiji (national)",
+    region: "National",
+    drugType: "Methamphetamine",
+    quantityKg: null,
+    quantityDisplay: "5–10 kg/day estimated inflow; liquid meth couriers intercepted",
+    severity: "moderate",
+    title: "Domestic flow hardens — liquid meth couriers, 5–10 kg/day estimated",
+    description: "Fiji Police and international partners document 5–10 kg/day of methamphetamine flowing into Fiji from New Zealand and Australia. Liquid methamphetamine couriers intercepted. Meth cases: ~45 in 2021, ~43 in 2022, rising to 132 in 2023 — a more-than-tripling in one year (UNODC). In 2023, 132 meth arrest cases recorded, majority believed methamphetamine (UNODC Pacific report).",
+    sources: [
+      { label: "FPR infographic annotation '2021–23 Domestic flow hardens'", url: null },
+      { label: "UNODC / Fiji Village — 132 cases 2023, tripling confirmed", url: "https://www.fijivillage.com/news/Major-concerns-as-Fiji-growing-as-a-hub-for-drug-trafficking-and-emerging-base-for-transnational-organized-crime-networks-f5r8x4/" }
+    ],
+    verified: true,
+    isAnchor: false
+  },
+  {
+    id: "e007",
+    date: "Mar–May 2025",
+    year: 2025, month: 3,
+    location: "Kadavu, Navosa, Cakaudrove",
+    region: "Southern / Central / Northern",
+    drugType: "Cannabis",
+    quantityKg: 9000,
+    quantityDisplay: "9+ tonnes marijuana; 4.9 kg suspected meth",
+    severity: "major",
+    title: "Rural hotspot sweeps — 9 tonnes marijuana, Kadavu / Navosa / Cakaudrove",
+    description: "Targeted operations across known rural cultivation regions. Seizures: 9+ tonnes harvested marijuana (street value USD $35M / FJD $78M) and 4.9 kg white substances suspected methamphetamine (value USD $1.3M). Total prevented from streets: FJD $81.4M. Assistant Commissioner Aporosa Lutunauga noted many farms had no identifiable owners. Significant because cultivation is spreading into highland and island areas beyond traditional Viti Levu urban zones.",
+    sources: [{ label: "Xinhua, 29 July 2025", url: null }],
+    verified: true,
+    isAnchor: false
+  },
+  {
+    id: "e008",
+    date: "Jan 2024",
+    year: 2024, month: 1,
+    location: "Nadi / Fantasy Island jetty / Legalega",
+    region: "Western",
+    drugType: "Methamphetamine",
+    quantityKg: 4800,
+    quantityDisplay: "4.8t (police) / 4.15t (court-confirmed) + additional 4.5t same network",
+    severity: "critical",
+    title: "Nadi meth raids — Sinaloa cartel, largest Pacific meth seizure at the time",
+    description: "Two seizures from the same operation: 3.5 tonnes at a vacant house (15 Jan 2024), then 1.1 tonnes at a second Nadi location days later — total 4.8 tonnes by police figure, 4.15 tonnes by court confirmation. Origin: Mexico (Sinaloa cartel, confirmed by Commissioner Tudravu). Method: mother-daughter sea transfer, barge hired as fuel delivery cover; offload at Fantasy Island jetty, Nadi. A separate 4.5-tonne Sinaloa seizure from the same network was also recorded. Key figures: Sam Amine (Australian, alleged orchestrator, $8.8M in linked assets), Justin Ho (local ringleader, previously evaded trial since 2018 for cocaine-as-kava exports). Fiji confirmed as transit point; drugs destined for Australia/NZ. Street value estimated >$1B (FJD). Marks start of the Industrial phase.",
+    sources: [
+      { label: "FBC News — transit point confirmed, ACP Waqa statement", url: "https://www.fbcnews.com.fj/news/fiji-used-as-transit-point-in-recent-drug-seizure/" },
+      { label: "Fiji Sun — Sam Amine assets, $8.8M property", url: "https://fijisun.com.fj/news/nation/fiji-police-seize-nearly-10m-in-drug-linked-assets-and-unexplained-wealth" },
+      { label: "MAITV Fiji / Fiji Village — 2024 case data, Sinaloa attribution", url: null }
+    ],
+    verified: true,
+    isAnchor: true
+  },
+  {
+    id: "e009",
+    date: "2024 (full year)",
+    year: 2024, month: 12,
+    location: "National",
+    region: "National",
+    drugType: "Multi",
+    quantityKg: null,
+    quantityDisplay: "2,035 total cases; 366 meth cases; 50 juvenile cases",
+    severity: "integrity",
+    title: "2024 case data — 2,035 drug cases, 4× increase since 2015",
+    description: "Fiji Police 2024 annual data: 2,035 total drug-related cases (4× increase from 479 in 2015). 366 methamphetamine cases (3.7× rise from 100 in 2020). Demographic breakdown: 94% male, 77% iTaukei offenders, Western Division 42% of cases. 50 cases involved juveniles. These are the verified figures used in FPR's governance failure analysis.",
+    sources: [
+      { label: "Fiji Village, June 2025; MAITV Fiji, Feb 2026", url: null }
+    ],
+    verified: true,
+    isAnchor: false
+  },
+  {
+    id: "e010",
+    date: "May 2025",
+    year: 2025, month: 5,
+    location: "Nadi International Airport",
+    region: "Western",
+    drugType: "Methamphetamine",
+    quantityKg: 4,
+    quantityDisplay: "4 kg",
+    severity: "major",
+    title: "Nadi Airport meth bust — police officer arrested, CNB integrity crisis begins",
+    description: "Joint FRCS-Fiji Police controlled delivery operation intercepted 4 kg of methamphetamine concealed in airfreight from a Southeast African nation. Three men charged. A police officer was also arrested. Commissioner Tudravu called for a full-scale investigation into insider collusion. Two CNB members and the FRCS intelligence unit head were among those charged — the event that triggered the CNB review and eventual dissolution.",
+    sources: [
+      { label: "Fiji Times — policeman arrested, 4 kg meth", url: "https://www.fijitimes.com.fj/policeman-arrested-for-seizure-of-4kg-methamphetamine-at-nadi-airport/" },
+      { label: "Lowy Institute — CNB/FRCS integrity crisis analysis", url: "https://www.lowyinstitute.org/the-interpreter/transit-hub-drug-market-criminal-syndicates-transform-pacific-threats" }
+    ],
+    verified: true,
+    isAnchor: false
+  },
+  {
+    id: "e011",
+    date: "Jul 2025",
+    year: 2025, month: 7,
+    location: "SOCID / national",
+    region: "National",
+    drugType: "Cocaine",
+    quantityKg: null,
+    quantityDisplay: "Intelligence phase only",
+    severity: "major",
+    title: "DEA-Fiji joint intelligence operation begins — South American cocaine network",
+    description: "Fiji's Serious Organised Crime and Intelligence Department (SOCID), working with the US DEA, identified a significant cocaine trafficking operation originating in South America routing toward Fiji. Months of surveillance followed. Village chief Niko Sucuvakaivalu of Vatutavui reported suspicious yacht activity on the coast for months before the raid: 'These sailors come in the dark... that is why we've been curious and concerned.' This community intelligence tip fine-tuned the intercept operation.",
+    sources: [
+      { label: "RNZ — six charged, DEA cooperation confirmed", url: "https://www.rnz.co.nz/international/pacific-news/584751/six-charged-in-fiji-after-half-a-billion-dollar-drug-seizure" },
+      { label: "ABC News, 22 Jan 2026 — village chief Niko Sucuvakaivalu quote", url: null }
+    ],
+    verified: true,
+    isAnchor: false
+  },
+  {
+    id: "e012",
+    date: "Sep 2025",
+    year: 2025, month: 9,
+    location: "National (CNB dissolved)",
+    region: "National",
+    drugType: "Multi",
+    quantityKg: null,
+    quantityDisplay: "N/A — integrity event",
+    severity: "integrity",
+    title: "Counter-Narcotics Bureau dissolved — systemic corruption confirmed",
+    description: "The Counter-Narcotics Bureau (CNB) was dissolved in September 2025 following a pattern of officer arrests. Minister for Policing Ioane Naivalurua later confirmed to parliament that 33 drug-related cases were recorded involving 27 police officers between January 2023 and October 2025. In 2025 alone, 4 officers — including 2 from the CNB — were charged with unlawful possession, supply, and importation of illicit drugs. A subsequent six-month internal investigation identified 11 further officers with alleged links to drug traffickers; files sent to prosecutors in May 2026.",
+    sources: [
+      { label: "OCCRP — Fiji Police probe senior officers", url: "https://www.occrp.org/en/news/fiji-police-probe-senior-officers-over-alleged-links-to-drug-traffickers" },
+      { label: "PMN.co.nz, 13 May 2026 — 11 officers under investigation", url: null }
+    ],
+    verified: true,
+    isAnchor: true
+  },
+  {
+    id: "e013",
+    date: "26 Sep 2025",
+    year: 2025, month: 9,
+    location: "Flagstaff / Rewa St (Suva) / Nadi",
+    region: "Central / Western",
+    drugType: "Methamphetamine",
+    quantityKg: null,
+    quantityDisplay: "Quantities not published",
+    severity: "major",
+    title: "Multi-division joint raids — 10 charged, Central / Southern / Western",
+    description: "Joint operations across three divisions. Eight appeared at Suva Magistrates Court, two at Nadi Magistrates Court. Charges: unlawful possession and possession of proceeds of crime. Flagstaff raid: Fijian and foreign national jointly charged. Rewa Street raid: three foreign nationals charged. All charged with one count of unlawful possession plus one count under the Proceeds of Crime Act.",
+    sources: [{ label: "Fiji Police official statement, 26 Sep 2025", url: "https://www.police.gov.fj/view/3460" }],
+    verified: true,
+    isAnchor: false
+  },
+  {
+    id: "e014",
+    date: "2025 (full year)",
+    year: 2025, month: 12,
+    location: "National",
+    region: "National",
+    drugType: "Multi",
+    quantityKg: null,
+    quantityDisplay: "$435K cash, $9.27M properties, $110K vehicles seized",
+    severity: "integrity",
+    title: "Police asset seizure program — $10M in drug-linked wealth across 2025",
+    description: "Fiji Police seized nearly $10M in proceeds of crime and unexplained wealth across 2025. Breakdown: $435,206 cash, $9.27M properties, $110,000 vehicles. Key assets linked to Sam Amine (Legalega meth) and Imran 'King Khan' Khan. Commissioner Tudravu's stated strategy: attack the financial infrastructure of the drug trade. Total Pacific illicit drug seizures for all of 2025: 4.6 tonnes (to be exceeded by January 2026 alone).",
+    sources: [
+      { label: "Fiji Sun — $10M assets seized 2025", url: "https://fijisun.com.fj/news/nation/fiji-police-seize-nearly-10m-in-drug-linked-assets-and-unexplained-wealth" },
+      { label: "AFP Media Release, 20 May 2026 — 4.6t Pacific 2025 total", url: null }
+    ],
+    verified: true,
+    isAnchor: false
+  },
+  {
+    id: "e015",
+    date: "15 Jan 2026",
+    year: 2026, month: 1,
+    location: "Vatia wharf, Tavua district, Viti Levu (northwest)",
+    region: "Western",
+    drugType: "Cocaine",
+    quantityKg: 2644,
+    quantityDisplay: "2.644t / 2,630 parcels / FJD $780M (USD $350M) street value",
+    severity: "critical",
+    title: "Operation Vatia — 2.644t cocaine, narco-sub, 4 Ecuadorians arrested",
+    description: "Fiji Police (CID, SOCID, Western Division Taskforce) and AFP executed a two-pronged raid at Vatia wharf, near Veisaru, Ba. One team intercepted a vehicle; a second raided a vessel at the wharf. Arrests: Bainivalu Suguturaga (26, Veisaru Ba, spent upbringing in NSW), Munendra (39, Veisaru Ba), and four Ecuadorians: Luciano Mero Sanchez (46), Jonathan Solorzano Bermello (30), Ramon Vega Parraga (52), Alejandro Yagual Gonzalez (47). Forensic analysis of all 2,630 parcels confirmed cocaine; total 2.644 tonnes. A Tongan-NZ passport holder was among subsequent accused. Police confirmed a semi-submersible vessel (narco-sub) was used — vessel not recovered. Conspiracy charges cover November 1, 2025 to January 15, 2026. Street value: FJD $780M (USD $350M) by Fiji Police; FJD $1.2B (USD $527M) by RNZ. This is Fiji's largest-ever cocaine seizure. Deputy Speaker Lynda Tabuya confirmed her home was searched as part of the investigation; nothing was found.",
+    sources: [
+      { label: "Fiji Police Statement, 23 Jan 2026", url: null },
+      { label: "ABC News, 22 Jan 2026", url: null },
+      { label: "Fiji Times — 2.64t forensic confirmation", url: "https://www.fijitimes.com.fj/2-64-tonne-cocaine-haul-valued-at-over-f1-1-billion-seized-in-vatia-operation/" },
+      { label: "RNZ, 27 Jan 2026 — six charged, accused names", url: "https://www.rnz.co.nz/international/pacific-news/584751/six-charged-in-fiji-after-half-a-billion-dollar-drug-seizure" },
+      { label: "Fiji Sun — AFP involvement, probe widens", url: "https://fijisun.com.fj/news/nation/police-widen-probe-into-tavua-drug-seizure" },
+      { label: "RNZ — Deputy Speaker statement", url: "https://www.rnz.co.nz/international/pacific-news/585133/fijian-government-mp-says-family-cooperated-after-son-in-law-charged-in-major-cocaine-seizure" }
+    ],
+    verified: true,
+    isAnchor: true
+  },
+  {
+    id: "e016",
+    date: "16 Jan 2026",
+    year: 2026, month: 1,
+    location: "French Polynesia waters",
+    region: "Regional",
+    drugType: "Cocaine",
+    quantityKg: 4870,
+    quantityDisplay: "4.87t (96 bales) — record for French Polynesia",
+    severity: "critical",
+    title: "French Navy intercept — 4.87t cocaine, day after Vatia raid",
+    description: "The day after Operation Vatia, the French Navy intercepted 96 bales of cocaine (4.87 tonnes) in French Polynesia waters — a record seizure for that territory. The timing and method strongly suggest the same South American trafficking network was running parallel shipments through the Pacific. The French President noted jurisdictional constraints; French Polynesian prisons were already full of drug smugglers awaiting trial.",
+    sources: [
+      { label: "ABC News, 22 Jan 2026 (French Embassy Australia Facebook)", url: null }
+    ],
+    verified: true,
+    isAnchor: false
+  },
+  {
+    id: "e017",
+    date: "Mar 2026",
+    year: 2026, month: 3,
+    location: "Lavidi area, Kadavu",
+    region: "Southern",
+    drugType: "Cannabis",
+    quantityKg: null,
+    quantityDisplay: "2,600+ plants seized",
+    severity: "moderate",
+    title: "Kadavu marijuana cultivation raid — 2,600+ plants, misconduct claims under investigation",
+    description: "Police acted on intelligence about marijuana cultivation in the Lavidi area, Kadavu. A 40-year-old man arrested. A second farmhouse housing 15 youths found; youths questioned and released. 2,600+ plants uprooted and removed. Claims of officer misconduct during the raid emerged; Fiji Police confirmed an internal investigation.",
+    sources: [{ label: "Fiji Village — Kadavu drug raid and misconduct claims", url: "https://www.fijivillage.com/news/police-investigate-claims-of-misconduct-during-kadavu-drug-raid-f6e846/" }],
+    verified: true,
+    isAnchor: false
+  },
+  {
+    id: "e018",
+    date: "Apr 2026",
+    year: 2026, month: 4,
+    location: "Nadi International Airport",
+    region: "Western",
+    drugType: "Methamphetamine",
+    quantityKg: 5,
+    quantityDisplay: "~5 kg",
+    severity: "major",
+    title: "FRCS airport intercept — ~5 kg meth concealed in passenger baggage",
+    description: "FRCS intercepted approximately 5 kg of methamphetamine at Nadi Airport through intelligence-led risk profiling. Drugs concealed in passenger baggage using sophisticated methods. Individual and drugs handed to Fiji Police CID and forensic teams. FRCS CEO Udit Singh cited the seizure as evidence of the agency's border security role following the CNB dissolution.",
+    sources: [{ label: "Fiji Sun — FRCS 5 kg meth Nadi Airport, April 2026", url: "https://fijisun.com.fj/news/nation/frcs-seizes-5kg-of-meth-at-nadi-airport" }],
+    verified: true,
+    isAnchor: false
+  },
+  {
+    id: "e019",
+    date: "13 May 2026",
+    year: 2026, month: 5,
+    location: "National (Fiji Police internal)",
+    region: "National",
+    drugType: "Multi",
+    quantityKg: null,
+    quantityDisplay: "N/A — integrity event",
+    severity: "integrity",
+    title: "11 officers investigated for drug trafficker links — files sent to prosecutors",
+    description: "Following a six-month internal investigation, Fiji Police confirmed 11 officers were investigated for alleged links to drug traffickers. Files sent to the Office of the Director of Public Prosecutions. This follows the pattern: 27 officers charged in 33 drug cases (Jan 2023–Oct 2025), CNB dissolved September 2025. Confirms systemic corruption compromising enforcement capacity across multiple units.",
+    sources: [{ label: "PMN.co.nz, 13 May 2026", url: null }],
+    verified: true,
+    isAnchor: false
+  },
+  {
+    id: "e020",
+    date: "20 May 2026",
+    year: 2026, month: 5,
+    location: "Suva (Pacific Transnational Crime Summit)",
+    region: "National",
+    drugType: "Multi",
+    quantityKg: null,
+    quantityDisplay: "17t seized Pacific-wide Jan–May 2026 (vs 4.6t all of 2025)",
+    severity: "deployment",
+    title: "Pacific Transnational Crime Summit — new Colombia IJIT, 17t seized in 2026",
+    description: "Fiji and AFP co-hosted the Pacific Transnational Crime Summit at the Marriott Resort, Nadi. Key announcements: AFP Commissioner Krissy Barrett confirmed 17 tonnes of illicit drugs seized across the Pacific in 2026 (Jan–May only) versus 4.6 tonnes for all of 2025 — a 370%+ increase. New International Joint Investigations Team established in Colombia, partnering Colombian National Police, AFP, NZ Police, Australian Border Force, and NZ Customs. Pacific-wide campaign launched asking islanders to report suspicious maritime vessels. 14+ police leaders attended from Tonga, Mexico, Colombia, PNG, French Polynesia, NZ, Vanuatu, Samoa, Solomon Islands, and others. Minister Naivalurua: 'A single seizure without institutional architecture is a moment, not a movement.'",
+    sources: [
+      { label: "AFP Media Release, 20 May 2026", url: null },
+      { label: "Fiji Times, 20 May 2026", url: null }
+    ],
+    verified: true,
+    isAnchor: false
+  },
+  {
+    id: "e021",
+    date: "10 Jun 2026",
+    year: 2026, month: 6,
+    location: "Lau Group — Ogea Island, Moala, Moce",
+    region: "Lau",
+    drugType: "Multi",
+    quantityKg: null,
+    quantityDisplay: "Quantities not yet published",
+    severity: "deployment",
+    title: "First dedicated Lau drug deployment — Ogea Island, Moala, Moce",
+    description: "Commissioner Tudravu confirmed officers from Lakeba deployed to affected areas of the Lau Group following drug discoveries. Investigations ongoing into suspected illicit drugs near Ogea Island. Follows earlier 2026 discoveries on Moala and Moce islands. Police working closely with local communities. This is the first documented police deployment specifically to Lau for drug interdiction in response to community reports — not reactive SAR or medical callout. Consistent with the beach-drop and GPS-cache trafficking method documented 2024–2026 across the Lau chain.",
+    sources: [{ label: "Fiji Times, 10 June 2026", url: null }],
+    verified: true,
+    isAnchor: true
+  },
+  {
+    id: "e022",
+    date: "Jun 2026",
+    year: 2026, month: 6,
+    location: "Sydney, Australia (Fiji TCU notified)",
+    region: "International",
+    drugType: "Multi",
+    quantityKg: 373,
+    quantityDisplay: "373 kg (106 kg cocaine blocks + 250 kg meth + 3 kg MDMA + 800 g 2CB)",
+    severity: "major",
+    title: "AFP Sydney seizure — 373 kg in diesel generator, Fiji TCU alerted",
+    description: "AFP and Australian Border Force found 373 kg of illicit drugs hidden in a diesel generator in Sydney: 106 × 1 kg cocaine blocks, 14 kg loose cocaine, 250 kg methamphetamine, 3 kg MDMA, and 800 g of 2CB. Drugs labelled 'Fiji' but police confirmed they were not routed through Fiji. Fiji's Transnational Crime Unit was alerted to the shipment's intended route. Seizure came days after the Pacific Transnational Crime Summit in Suva.",
+    sources: [{ label: "Fiji Sun — 'Fiji-labelled drugs were not routed to pass through Fiji'", url: "https://fijisun.com.fj/news/nation/fiji-labelled-drugs-were-not-routed-to-pass-through-fiji-police" }],
+    verified: true,
+    isAnchor: false
+  }
+];
+
+const verifiedCount = EVENTS.filter(e => e.verified).length;
+const totalKgVerified = EVENTS.filter(e => e.quantityKg && e.verified).reduce((s, e) => s + e.quantityKg, 0);
+const anchorCount = EVENTS.filter(e => e.isAnchor).length;
+const integrityCount = EVENTS.filter(e => e.severity === 'integrity' || e.severity === 'deployment').length;
+
+document.getElementById('summaryStats').innerHTML = `
+  <div class="stat-card"><div class="stat-num">${EVENTS.length}</div><div class="stat-label">Events logged</div></div>
+  <div class="stat-card"><div class="stat-num">${(totalKgVerified/1000).toFixed(1)}t</div><div class="stat-label">Verified quantity (kg)</div></div>
+  <div class="stat-card"><div class="stat-num">${anchorCount}</div><div class="stat-label">Anchor events</div></div>
+  <div class="stat-card"><div class="stat-num">${integrityCount}</div><div class="stat-label">Integrity / Response events</div></div>
+`;
+
+const drugTypes = [...new Set(EVENTS.map(e => e.drugType))];
+document.getElementById('drugFilters').innerHTML =
+  `<button class="filter-btn active" data-filter="drug" data-val="all">All</button>` +
+  drugTypes.map(d => `<button class="filter-btn" data-filter="drug" data-val="${d}">${d}</button>`).join('');
+
+let state = { drug: 'all', severity: 'all', search: '', verifiedOnly: false, sortNewest: true };
+
+function renderTimeline() {
+  const tl = document.getElementById('timeline');
+  const noResults = document.getElementById('noResults');
+  const meta = document.getElementById('resultsMeta');
+
+  let filtered = EVENTS.filter(e => {
+    if (state.drug !== 'all' && e.drugType !== state.drug) return false;
+    if (state.severity !== 'all' && e.severity !== state.severity) return false;
+    if (state.verifiedOnly && !e.verified) return false;
+    if (state.search) {
+      const q = state.search.toLowerCase();
+      if (![e.title, e.description, e.location, e.region, e.drugType, String(e.year)].some(f => f.toLowerCase().includes(q))) return false;
+    }
+    return true;
+  });
+
+  filtered.sort((a, b) => state.sortNewest
+    ? (b.year * 100 + b.month) - (a.year * 100 + a.month)
+    : (a.year * 100 + a.month) - (b.year * 100 + b.month));
+
+  meta.innerHTML = `Showing <strong>${filtered.length}</strong> of ${EVENTS.length} events`;
+
+  if (!filtered.length) { tl.innerHTML = ''; noResults.classList.add('show'); return; }
+  noResults.classList.remove('show');
+
+  tl.innerHTML = filtered.map(e => {
+    const drugKey = e.drugType.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z-]/g,'');
+    const drugBadge = `<span class="badge badge-drug-${drugKey}">${e.drugType}</span>`;
+    const sevBadge = `<span class="badge badge-severity-${e.severity}">${e.severity.charAt(0).toUpperCase()+e.severity.slice(1)}</span>`;
+    const verBadge = e.verified
+      ? `<span class="badge badge-verified">✓ Verified</span>`
+      : `<span class="badge badge-pending">⚠ Source pending</span>`;
+    const qtyPill = `<span class="qty-pill">${e.quantityDisplay}</span>`;
+    const sourcesHtml = e.sources.length
+      ? `<div class="sources"><div class="sources-label">Sources</div>${e.sources.map(s =>
+          s.url
+            ? `<a class="source-link" href="${s.url}" target="_blank" rel="noopener">${s.label} ↗</a>`
+            : `<span class="source-text">${s.label}</span>`
+        ).join('')}</div>`
+      : '';
+    const yearLabel = String(e.year);
+    const dateLabel = e.date.replace(yearLabel,'').trim();
+
+    return `<div class="event">
+      <div class="event-date"><span class="year">${yearLabel}</span>${dateLabel}</div>
+      <div class="event-card ${e.isAnchor ? 'anchor' : ''}">
+        <div class="card-top">${drugBadge}${sevBadge}${verBadge}</div>
+        <div class="event-title">${e.title}</div>
+        <div class="event-desc">${e.description}</div>
+        <div class="card-meta">
+          <span class="meta-item">📍 <strong>${e.location}</strong></span>
+          <span class="meta-item">🗂 ${e.region}</span>
+          ${qtyPill}
+        </div>
+        ${sourcesHtml}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+document.addEventListener('click', e => {
+  if (e.target.matches('[data-filter="drug"]')) {
+    document.querySelectorAll('[data-filter="drug"]').forEach(b => b.classList.remove('active'));
+    e.target.classList.add('active');
+    state.drug = e.target.dataset.val;
+    renderTimeline();
+  }
+  if (e.target.matches('[data-filter="severity"]')) {
+    document.querySelectorAll('[data-filter="severity"]').forEach(b => b.classList.remove('active','red','amber','green','purple'));
+    e.target.classList.add('active');
+    if (e.target.dataset.color) e.target.classList.add(e.target.dataset.color);
+    state.severity = e.target.dataset.val;
+    renderTimeline();
+  }
+});
+
+document.getElementById('searchInput').addEventListener('input', e => { state.search = e.target.value; renderTimeline(); });
+document.getElementById('verifiedToggle').addEventListener('click', function() {
+  state.verifiedOnly = !state.verifiedOnly;
+  this.textContent = `Verified only: ${state.verifiedOnly ? 'ON' : 'OFF'}`;
+  this.classList.toggle('on', state.verifiedOnly);
+  renderTimeline();
+});
+document.getElementById('sortToggle').addEventListener('click', function() {
+  state.sortNewest = !state.sortNewest;
+  this.textContent = `Sort: ${state.sortNewest ? 'Newest first' : 'Oldest first'}`;
+  renderTimeline();
+});
+document.getElementById('resetBtn').addEventListener('click', () => {
+  state = { drug: 'all', severity: 'all', search: '', verifiedOnly: false, sortNewest: true };
+  document.getElementById('searchInput').value = '';
+  document.getElementById('verifiedToggle').textContent = 'Verified only: OFF';
+  document.getElementById('verifiedToggle').classList.remove('on');
+  document.getElementById('sortToggle').textContent = 'Sort: Newest first';
+  document.querySelectorAll('[data-filter]').forEach(b => {
+    b.classList.remove('active','red','amber','green','purple');
+    if (b.dataset.val === 'all') b.classList.add('active');
+  });
+  renderTimeline();
+});
+
+renderTimeline();
+</script>
+</body>
+</html>
