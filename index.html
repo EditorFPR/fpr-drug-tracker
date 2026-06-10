@@ -16,7 +16,7 @@
     --ink-faint: #a0aec0;
     --blue: #2c5282;
     --blue-light: #ebf4ff;
-    --red: #c8453a;
+    --red: #CE1126;
     --red-light: #fff5f5;
     --amber: #b7791f;
     --amber-light: #fffff0;
@@ -55,6 +55,7 @@
   .filter-btn.active.amber { background: var(--amber); border-color: var(--amber); }
   .filter-btn.active.green { background: var(--green); border-color: var(--green); }
   .filter-btn.active.purple { background: var(--purple); border-color: var(--purple); }
+  .filter-btn.active.teal { background: #2c7a7b; border-color: #2c7a7b; }
   .search-wrap { position: relative; flex: 1; min-width: 200px; }
   .search-input { width: 100%; padding: 8px 12px 8px 34px; border: 1.5px solid var(--border); border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 13px; color: var(--ink); background: var(--cream); outline: none; transition: border-color .15s; }
   .search-input:focus { border-color: var(--blue); background: var(--white); }
@@ -684,17 +685,22 @@ function renderTimeline() {
   }).join('');
 }
 
+const COLOR_CLASSES = ['red','amber','green','purple','teal'];
+
 document.addEventListener('click', e => {
   if (e.target.matches('[data-filter="drug"]')) {
-    document.querySelectorAll('[data-filter="drug"]').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('[data-filter="drug"]').forEach(b => b.classList.remove('active', ...COLOR_CLASSES));
     e.target.classList.add('active');
+    if (e.target.dataset.color) e.target.classList.add(e.target.dataset.color);
     state.drug = e.target.dataset.val;
     renderTimeline();
   }
   if (e.target.matches('[data-filter="severity"]')) {
-    document.querySelectorAll('[data-filter="severity"]').forEach(b => b.classList.remove('active','red','amber','green','purple'));
+    document.querySelectorAll('[data-filter="severity"]').forEach(b => b.classList.remove('active', ...COLOR_CLASSES));
     e.target.classList.add('active');
-    if (e.target.dataset.color) e.target.classList.add(e.target.dataset.color);
+    // deployment button has no color class — give it a teal highlight
+    const color = e.target.dataset.color || (e.target.dataset.val === 'deployment' ? 'teal' : '');
+    if (color) e.target.classList.add(color);
     state.severity = e.target.dataset.val;
     renderTimeline();
   }
