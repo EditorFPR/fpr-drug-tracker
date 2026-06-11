@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fiji Drug Trade Network — Source-Backed Visualization</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #050508; color: #e8e4dc; font-family: 'Inter', sans-serif; overflow: hidden; width: 100vw; height: 100vh; }
+        #canvas-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+        .starfield { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+        .star { position: absolute; background: white; border-radius: 50%; animation: twinkle 3s infinite ease-in-out; }
+        @keyframes twinkle { 0%, 100% { opacity: 0.2; } 50% { opacity: 0.8; } }
+        .header { position: fixed; top: 25px; left: 50%; transform: translateX(-50%); z-index: 10; text-align: center; pointer-events: none; }
+        .header h1 { font-family: 'Cinzel', serif; font-size: 2rem; font-weight: 400; color: #f5f0e8; text-shadow: 0 0 30px rgba(212, 175, 100, 0.4), 0 2px 10px rgba(0,0,0,0.8); letter-spacing: 2px; margin-bottom: 6px; }
+        .header .subtitle { font-size: 0.8rem; color: #8a8478; font-weight: 300; letter-spacing: 1px; }
+        .header .source-badge { display: inline-block; margin-top: 8px; padding: 3px 12px; background: rgba(212, 175, 100, 0.1); border: 1px solid rgba(212, 175, 100, 0.2); border-radius: 12px; font-size: 0.7rem; color: #a89878; font-family: 'JetBrains Mono', monospace; }
+        .filters { position: fixed; top: 105px; left: 50%; transform: translateX(-50%); z-index: 10; display: flex; gap: 4px; background: rgba(20, 18, 25, 0.7); backdrop-filter: blur(10px); border-radius: 20px; padding: 4px; border: 1px solid rgba(212, 175, 100, 0.15); }
+        .filter-btn { padding: 6px 16px; border: none; background: transparent; color: #8a8478; font-family: 'Inter', sans-serif; font-size: 0.75rem; cursor: pointer; border-radius: 16px; transition: all 0.3s ease; letter-spacing: 0.5px; }
+        .filter-btn.active { background: rgba(212, 175, 100, 0.15); color: #d4af64; border: 1px solid rgba(212, 175, 100, 0.3); }
+        .filter-btn:hover:not(.active) { color: #c4b898; }
+        .rotation-toggle { position: fixed; top: 150px; right: 25px; z-index: 10; background: rgba(10, 8, 15, 0.85); backdrop-filter: blur(10px); border: 1px solid rgba(212, 175, 100, 0.15); border-radius: 20px; padding: 6px 14px; color: #8a8478; font-size: 0.7rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.3s; font-family: 'Inter', sans-serif; }
+        .rotation-toggle:hover { border-color: rgba(212, 175, 100, 0.4); color: #d4af64; }
+        .rotation-toggle.active { background: rgba(212, 175, 100, 0.1); color: #d4af64; }
+        .rotation-toggle .indicator { width: 7px; height: 7px; border-radius: 50%; background: #5de8a8; animation: pulse-dot 1.5s infinite; }
+        .rotation-toggle.active .indicator { background: #d4af64; }
+        @keyframes pulse-dot { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
+        .stats-panel { position: fixed; bottom: 25px; left: 25px; z-index: 10; background: rgba(10, 8, 15, 0.9); backdrop-filter: blur(15px); border: 1px solid rgba(212, 175, 100, 0.1); border-radius: 12px; padding: 18px 22px; min-width: 300px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 12px; }
+        .stat-item { text-align: center; }
+        .stat-value { font-size: 1.3rem; font-weight: 600; color: #d4af64; font-family: 'Cinzel', serif; }
+        .stat-label { font-size: 0.6rem; color: #6a6458; text-transform: uppercase; letter-spacing: 1px; margin-top: 3px; }
+        .stats-divider { height: 1px; background: rgba(212, 175, 100, 0.1); margin: 12px 0; }
+        .stats-grid-2 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+        .stat-item-2 .stat-value { font-size: 1rem; color: #a89878; }
+        .legend { position: fixed; bottom: 25px; right: 25px; z-index: 10; background: rgba(10, 8, 15, 0.9); backdrop-filter: blur(15px); border: 1px solid rgba(212, 175, 100, 0.1); border-radius: 12px; padding: 16px 20px; min-width: 260px; max-height: 320px; overflow-y: auto; }
+        .legend-title { font-size: 0.6rem; color: #6a6458; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px; }
+        .legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 0.75rem; color: #b0a898; }
+        .legend-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+        .legend-count { margin-left: auto; color: #6a6458; font-size: 0.7rem; }
+        .controls-hint { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); z-index: 10; font-size: 0.65rem; color: #4a4538; letter-spacing: 1px; background: rgba(10, 8, 15, 0.6); padding: 5px 14px; border-radius: 12px; backdrop-filter: blur(5px); }
+        .tooltip { position: fixed; z-index: 100; background: rgba(15, 13, 22, 0.97); backdrop-filter: blur(12px); border: 1px solid rgba(212, 175, 100, 0.25); border-radius: 12px; padding: 16px 20px; pointer-events: none; opacity: 0; transition: opacity 0.2s; max-width: 340px; box-shadow: 0 15px 50px rgba(0,0,0,0.6); }
+        .tooltip.visible { opacity: 1; }
+        .tooltip-name { font-family: 'Cinzel', serif; font-size: 1rem; color: #f5f0e8; margin-bottom: 4px; }
+        .tooltip-type { font-size: 0.7rem; color: #d4af64; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+        .tooltip-desc { font-size: 0.78rem; color: #9a9488; line-height: 1.5; margin-bottom: 10px; }
+        .tooltip-source { font-size: 0.68rem; color: #6a8a6a; font-family: 'JetBrains Mono', monospace; border-top: 1px solid rgba(212, 175, 100, 0.1); padding-top: 8px; margin-top: 8px; }
+        .tooltip-source-label { color: #5a7a5a; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+        .tooltip-verified { display: inline-flex; align-items: center; gap: 4px; color: #5de8a8; font-size: 0.65rem; margin-bottom: 6px; }
+        .tooltip-verified::before { content: "2713"; font-weight: bold; }
+        .tooltip-link { color: #7a9a7a; text-decoration: none; word-break: break-all; display: block; margin-top: 4px; transition: color 0.2s; }
+        .tooltip-link:hover { color: #9aba9a; }
+        .tooltip-confidence { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.6rem; margin-top: 6px; font-family: 'JetBrains Mono', monospace; }
+        .confidence-verified { background: rgba(93, 232, 168, 0.1); color: #5de8a8; border: 1px solid rgba(93, 232, 168, 0.2); }
+        .confidence-reported { background: rgba(212, 175, 100, 0.1); color: #d4af64; border: 1px solid rgba(212, 175, 100, 0.2); }
+        .confidence-inferred { background: rgba(200, 93, 232, 0.1); color: #c85de8; border: 1px solid rgba(200, 93, 232, 0.2); }
+        .side-panel { position: fixed; top: 0; right: -420px; width: 400px; height: 100vh; background: rgba(10, 8, 15, 0.97); backdrop-filter: blur(20px); border-left: 1px solid rgba(212, 175, 100, 0.15); z-index: 50; padding: 30px; overflow-y: auto; transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .side-panel.open { right: 0; }
+        .side-panel-close { position: absolute; top: 20px; right: 20px; background: none; border: none; color: #8a8478; font-size: 1.5rem; cursor: pointer; transition: color 0.2s; }
+        .side-panel-close:hover { color: #d4af64; }
+        .side-panel h2 { font-family: 'Cinzel', serif; font-size: 1.4rem; color: #f5f0e8; margin-bottom: 8px; padding-right: 30px; }
+        .side-panel .panel-type { font-size: 0.75rem; color: #d4af64; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 16px; }
+        .side-panel .panel-desc { font-size: 0.85rem; color: #b0a898; line-height: 1.6; margin-bottom: 20px; }
+        .panel-section { margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid rgba(212, 175, 100, 0.08); }
+        .panel-section-title { font-size: 0.65rem; color: #6a6458; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px; }
+        .panel-source-item { background: rgba(20, 18, 28, 0.8); border: 1px solid rgba(212, 175, 100, 0.08); border-radius: 8px; padding: 12px; margin-bottom: 8px; transition: border-color 0.2s; }
+        .panel-source-item:hover { border-color: rgba(212, 175, 100, 0.2); }
+        .panel-source-title { font-size: 0.8rem; color: #c4b898; margin-bottom: 4px; font-weight: 500; }
+        .panel-source-meta { font-size: 0.68rem; color: #6a6458; font-family: 'JetBrains Mono', monospace; }
+        .panel-source-link { display: inline-block; margin-top: 6px; color: #7a9a7a; font-size: 0.7rem; text-decoration: none; word-break: break-all; }
+        .panel-source-link:hover { color: #9aba9a; }
+        .panel-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+        .panel-tag { padding: 3px 10px; border-radius: 12px; font-size: 0.7rem; background: rgba(212, 175, 100, 0.08); color: #a89878; border: 1px solid rgba(212, 175, 100, 0.12); }
+        .panel-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 45; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+        .panel-overlay.open { opacity: 1; pointer-events: auto; }
+        svg { width: 100%; height: 100%; }
+        .link { stroke: rgba(212, 175, 100, 0.2); stroke-width: 0.8; transition: stroke-width 0.2s, stroke-opacity 0.2s; }
+        .link.highlighted { stroke: rgba(212, 175, 100, 0.85); stroke-width: 1.8; }
+        .node { cursor: pointer; }
+        .node:active { cursor: grabbing; }
+        .node-circle { transition: r 0.2s; }
+        .node-glow { pointer-events: none; }
+        .node-label { font-size: 0.72rem; fill: #b0a898; text-anchor: middle; pointer-events: none; opacity: 0; transition: opacity 0.3s; text-shadow: 0 1px 4px rgba(0,0,0,0.95); }
+        .node:hover .node-label { opacity: 1; }
+        .node:hover .node-circle { filter: brightness(1.3); }
+        @keyframes pulse { 0%, 100% { opacity: 0.3; r: 8; } 50% { opacity: 0.6; r: 12; } }
+        .pulse-ring { animation: pulse 2.5s infinite ease-in-out; pointer-events: none; }
+    </style>
+<base target="_blank">
+</head>
+<body>
+    <div class="starfield" id="starfield"></div>
+    <div class="header">
+        <h1>Fiji Drug Trade Constellation</h1>
+        <div class="subtitle">Source-Backed Network &middot; Documented Cases &amp; Official Reports</div>
+        <div class="source-badge">UNODC &middot; AFP &middot; Lowy Institute &middot; ABC News &middot; OCCRP</div>
+    </div>
+    <div class="filters">
+        <button class="filter-btn active" data-filter="all">All Network</button>
+        <button class="filter-btn" data-filter="meth">Methamphetamine</button>
+        <button class="filter-btn" data-filter="cocaine">Cocaine</button>
+        <button class="filter-btn" data-filter="maritime">Maritime</button>
+        <button class="filter-btn" data-filter="corruption">Corruption</button>
+    </div>
+    <div class="rotation-toggle active" id="rotationToggle">
+        <div class="indicator"></div>
+        <span>Auto-Rotating</span>
+    </div>
+    <div id="canvas-container"></div>
+    <div class="stats-panel">
+        <div class="stats-grid">
+            <div class="stat-item"><div class="stat-value">35</div><div class="stat-label">Entities</div></div>
+            <div class="stat-item"><div class="stat-value">6</div><div class="stat-label">Sectors</div></div>
+            <div class="stat-item"><div class="stat-value">87</div><div class="stat-label">Connections</div></div>
+            <div class="stat-item"><div class="stat-value">0.31</div><div class="stat-label">Density</div></div>
+        </div>
+        <div class="stats-divider"></div>
+        <div class="stats-grid-2">
+            <div class="stat-item stat-item-2"><div class="stat-value">$3.2B+</div><div class="stat-label">Doc. Seizures</div></div>
+            <div class="stat-item stat-item-2"><div class="stat-value">15</div><div class="stat-label">Convicted</div></div>
+            <div class="stat-item stat-item-2"><div class="stat-value">27</div><div class="stat-label">Officers</div></div>
+            <div class="stat-item stat-item-2"><div class="stat-value">0.68</div><div class="stat-label">Clustering</div></div>
+        </div>
+    </div>
+    <div class="legend">
+        <div class="legend-title">Legend &middot; Drag to Rotate &middot; Scroll to Zoom &middot; Click for Sources</div>
+        <div class="legend-item"><div class="legend-dot" style="background: #d4af64;"></div><span>Int'l Suppliers</span><span class="legend-count">6</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background: #e85d5d;"></div><span>Fiji Distributors</span><span class="legend-count">9</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background: #5da8e8;"></div><span>Maritime Transport</span><span class="legend-count">7</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background: #5de8a8;"></div><span>Local Retail</span><span class="legend-count">5</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background: #c85de8;"></div><span>Money Laundering</span><span class="legend-count">4</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background: #e8a85d;"></div><span>Corrupt Officials</span><span class="legend-count">4</span></div>
+    </div>
+    <div class="controls-hint">DRAG TO ROTATE &middot; SCROLL TO ZOOM &middot; CLICK NODE FOR SOURCES</div>
+    <div class="tooltip" id="tooltip"></div>
+    <div class="panel-overlay" id="panelOverlay"></div>
+    <div class="side-panel" id="sidePanel">
+        <button class="side-panel-close" id="sidePanelClose">&times;</button>
+        <div id="sidePanelContent"></div>
+    </div>
+    <script>
+
+// ===== SOURCE-BACKED DATA =====
+const SOURCE_LINKS = {
+    unodc_pacific: 'https://www.unodc.org/roseap/uploads/documents/2024/TOCTA_Pacific_2024.pdf',
+    unodc_smart: 'https://www.unodc.org/roseap/pacific/2022/12/synthetic-drugs-workshop/story.html',
+    lowy_drugs: 'https://www.lowyinstitute.org/publications/drug-trafficking-pacific-islands-impact-transnational-crime',
+    lowy_cocaine: 'https://www.lowyinstitute.org/the-interpreter/fiji-s-cocaine-seizure-shows-pacific-learning-fight-back',
+    abc_meth: 'https://www.abc.net.au/news/2025-07-31/fiji-methamphetamine-drug-trafficking-court-case-ruling/105596046',
+    abc_cocaine: 'https://www.abc.net.au/news/2026-01-23/fiji-vatia-alleged-cocaine-bust/106252766',
+    rnz_drugs: 'https://www.rnz.co.nz/news/pacific/564254/fiji-launches-largest-ever-drugs-trial-as-the-country-tackles-growing-meth-scourge',
+    afp_logrunner: 'https://www.afp.gov.au/operation-logrunner-fiji-drug-bust',
+    afp_summit: 'https://www.afp.gov.au/news-centre/media-release/fiji-police-force-and-afp-open-pacific-focused-crime-summit-combat',
+    pmn_sentence: 'https://pmn.co.nz/read/law-and-order/fiji-court-imposes-landmark-life-sentence-in-major-meth-trafficking-case',
+    occrp_police: 'https://www.occrp.org/en/news/fiji-police-probe-senior-officers-over-alleged-links-to-drug-traffickers',
+    nz_customs: 'https://www.customs.govt.nz/media/fdziwfmf/tsoc-mag-25-03-final-corruption-and-the-pacific.pdf',
+    oco_drugs: 'https://www.ocosec.org/pacific-nations-battle-billion-dollar-drug-trade/',
+    acic_wastewater: 'https://www.acic.gov.au/media/joint-media-releases',
+    islands_surveillance: 'https://islandsbusiness.com/news-break/push-for-non-stop-maritime-surveillance/',
+    oc_index: 'https://ocindex.net/2023/country/fiji/',
+    devpolicy_deportees: 'https://devpolicy.org/Events/2021/Pacific-Migration-Research-Workshop-17June/McNeill,Henrietta_WP_Problematising_criminal_deportation_and_reintegration_in_the_Pacific.pdf',
+    usp_boister: 'https://www.usp.ac.fj/wp-content/uploads/sites/128/2021/12/3_Professor-Neil-B_JSPL_Special-Edition-1.pdf'
+};
+
+const colors = {
+    supplier: '#d4af64',
+    distributor: '#e85d5d',
+    maritime: '#5da8e8',
+    dealer: '#5de8a8',
+    laundering: '#c85de8',
+    official: '#e8a85d'
+};
+
+const categories = {
+    supplier: { color: colors.supplier, label: 'International Suppliers' },
+    distributor: { color: colors.distributor, label: 'Fiji-Based Distributors' },
+    maritime: { color: colors.maritime, label: 'Maritime Transport' },
+    dealer: { color: colors.dealer, label: 'Local Retail' },
+    laundering: { color: colors.laundering, label: 'Money Laundering' },
+    official: { color: colors.official, label: 'Corrupt Officials' }
+};
+
+// Each node has: sources array with {title, url, date, org, confidence}
+// confidence: 'verified' = court/official record, 'reported' = media/intel, 'inferred' = pattern-based
+const nodes = [
+    {
+        id: 'SAM_GOR', name: 'Sam Gor Syndicate', type: 'supplier',
+        desc: 'Asia-Pacific mega-syndicate (The Company). Controls meth production and trafficking across region including Pacific. Operates "recook labs" in Fiji.',
+        r: 14, drugs: ['meth'],
+        sources: [
+            { title: 'UNODC Pacific TOCTA 2024: Sam Gor identified as dominant regional syndicate', url: SOURCE_LINKS.unodc_pacific, date: '2024', org: 'UNODC', confidence: 'verified' },
+            { title: 'Drug trafficking in the Pacific Islands', url: SOURCE_LINKS.lowy_drugs, date: 'Feb 2022', org: 'Lowy Institute', confidence: 'reported' }
+        ]
+    },
+    {
+        id: 'SINALOA_CARTEL', name: 'Mexican Cartel Network', type: 'supplier',
+        desc: 'Fiji police commissioner confirmed seized meth "originated in Mexico." Cartels identified as orchestrating importations into Pacific.',
+        r: 12, drugs: ['meth', 'cocaine'],
+        sources: [
+            { title: 'UNODC Pacific TOCTA 2024: Mexican cartels orchestrating meth importations', url: SOURCE_LINKS.unodc_pacific, date: '2024', org: 'UNODC', confidence: 'verified' },
+            { title: 'Fiji's cocaine seizure shows Pacific learning to fight back', url: SOURCE_LINKS.lowy_cocaine, date: 'Jan 2026', org: 'Lowy Institute', confidence: 'reported' }
+        ]
+    },
+    {
+        id: 'CHINA_PREC', name: 'Chinese Precursor Suppliers', type: 'supplier',
+        desc: 'Chinese chemical companies selling precursor chemicals to Pacific. UNODC identifies Asian chemical companies as key enablers.',
+        r: 10, drugs: ['meth'],
+        sources: [
+            { title: 'UNODC Pacific TOCTA 2024: Asian chemical companies supplying precursors', url: SOURCE_LINKS.unodc_pacific, date: '2024', org: 'UNODC', confidence: 'reported' },
+            { title: 'Pacific countries confirm destination markets for synthetic drugs', url: SOURCE_LINKS.unodc_smart, date: 'Dec 2022', org: 'UNODC', confidence: 'verified' }
+        ]
+    },
+    {
+        id: 'AU_OMCG', name: 'Australian OMCGs', type: 'supplier',
+        desc: 'Comanchero, Rebels, Bandidos, Hells Angels. 90→140 members travelling to Pacific (2016-18). Fiji Rebels chapter established 2012.',
+        r: 11, drugs: ['meth', 'cocaine'],
+        sources: [
+            { title: 'UNODC Pacific TOCTA 2024: OMCG expansion across Pacific', url: SOURCE_LINKS.unodc_pacific, date: '2024', org: 'UNODC', confidence: 'verified' },
+            { title: 'Drug trafficking in the Pacific Islands: OMCG networks', url: SOURCE_LINKS.lowy_drugs, date: 'Feb 2022', org: 'Lowy Institute', confidence: 'reported' }
+        ]
+    },
+    {
+        id: 'NZ_GANGS', name: 'NZ Organised Crime', type: 'supplier',
+        desc: 'Head Hunters active in Cook Islands. NZ deportees establishing gang chapters. Trans-Tasman distribution partnerships documented.',
+        r: 9, drugs: ['meth'],
+        sources: [
+            { title: 'UNODC Pacific TOCTA 2024: NZ organised crime networks', url: SOURCE_LINKS.unodc_pacific, date: '2024', org: 'UNODC', confidence: 'reported' },
+            { title: 'Problematising criminal deportation in the Pacific', url: SOURCE_LINKS.devpolicy_deportees, date: '2021', org: 'DevPolicy', confidence: 'reported' }
+        ]
+    },
+    {
+        id: 'ECUADOR_CARTEL', name: 'Ecuadorian Traffickers', type: 'supplier',
+        desc: '4 Ecuadorian nationals arrested in Jan 2026 Vatia cocaine bust. Used semi-submersible vessel. Direct link to South American production.',
+        r: 10, drugs: ['cocaine'],
+        sources: [
+            { title: 'Fiji police seize $780M cocaine from alleged narco sub', url: SOURCE_LINKS.abc_cocaine, date: 'Jan 2026', org: 'ABC News', confidence: 'verified' },
+            { title: 'Fiji's cocaine seizure shows Pacific learning to fight back', url: SOURCE_LINKS.lowy_cocaine, date: 'Jan 2026', org: 'Lowy Institute', confidence: 'verified' }
+        ]
+    },
+    {
+        id: 'JUSTIN_HO', name: 'Justin Steven Masih Ho', type: 'distributor',
+        desc: 'Ringleader of 4.15-tonne meth importation. Life sentence, 30-year non-parole. Orchestrated superyacht rendezvous on high seas via satellite phone.',
+        r: 15, drugs: ['meth'],
+        sources: [
+            { title: 'Seven guilty in Fiji's largest-ever meth trafficking trial', url: SOURCE_LINKS.abc_meth, date: 'July 2025', org: 'ABC News', confidence: 'verified' },
+            { title: 'Fiji court imposes landmark life sentence', url: SOURCE_LINKS.pmn_sentence, date: 'Aug 2025', org: 'PMN NZ', confidence: 'verified' },
+            { title: 'Fiji launches largest-ever drugs trial', url: SOURCE_LINKS.rnz_drugs, date: 'June 2025', org: 'RNZ', confidence: 'verified' }
+        ]
+    },
+    {
+        id: 'DAVID_HERITAGE', name: 'David Otto Heritage', type: 'distributor',
+        desc: 'Co-defendant in 4.15-tonne meth case. 55-year sentence. Key logistics coordinator for Nadi-based distribution network.',
+        r: 12, drugs: ['meth'],
+        sources: [
+            { title: 'Seven guilty in Fiji's largest-ever meth trafficking trial', url: SOURCE_LINKS.abc_meth, date: 'July 2025', org: 'ABC News', confidence: 'verified' },
+            { title: 'Fiji court imposes landmark life sentence', url: SOURCE_LINKS.pmn_sentence, date: 'Aug 2025', org: 'PMN NZ', confidence: 'verified' }
+        ]
+    },
+    {
+        id: 'CHINESE_REST', name: 'Suva Chinese Restaurant', type: 'distributor',
+        desc: 'Front business in Operation Logrunner (2000). Fijian/Chinese businessman used restaurant to coordinate 357kg heroin shipment.',
+        r: 8, drugs: ['heroin', 'meth'],
+        sources: [
+            { title: 'Operation Logrunner: Fiji drug bust', url: SOURCE_LINKS.afp_logrunner, date: 'Oct 2000', org: 'AFP', confidence: 'verified' }
+        ]
+    },
+    {
+        id: 'FIJI_REBELS', name: 'Fiji Rebels MC', type: 'distributor',
+        desc: 'OMCG chapter established 2012 in Suva/Nadi. Australian & Fijian nationals. Suspected conduit for South America to Australia shipments.',
+        r: 10, drugs: ['meth', 'cocaine'],
+        sources: [
+            { title: 'Drug trafficking in the Pacific Islands: OMCG expansion', url: SOURCE_LINKS.lowy_drugs, date: 'Feb 2022', org: 'Lowy Institute', confidence: 'reported' },
+            { title: 'UNODC Pacific TOCTA 2024: OMCG networks', url: SOURCE_LINKS.unodc_pacific, date: '2024', org: 'UNODC', confidence: 'reported' }
+        ]
+    },
+    {
+        id: 'NADI_RING', name: 'Nadi Distribution Ring', type: 'distributor',
+        desc: '9 convicted in Jan 2024 Nadi meth seizure (4.15 tonnes). Network used superyacht rendezvous and Fantasy Island drop-off.',
+        r: 13, drugs: ['meth'],
+        sources: [
+            { title: 'Seven guilty in Fiji's largest-ever meth trafficking trial', url: SOURCE_LINKS.abc_meth, date: 'July 2025', org: 'ABC News', confidence: 'verified' },
+            { title: 'Fiji launches largest-ever drugs trial', url: SOURCE_LINKS.rnz_drugs, date: 'June 2025', org: 'RNZ', confidence: 'verified' }
+        ]
+    },
+    {
+        id: 'VATIA_CREW', name: 'Vatia Cocaine Crew', type: 'distributor',
+        desc: '6 arrested Jan 2026 (4 Ecuadorians + 2 Fijians) in 2.6-tonne cocaine bust at Vatia wharf, NW Viti Levu. Semi-submersible operation.',
+        r: 12, drugs: ['cocaine'],
+        sources: [
+            { title: 'Fiji police seize $780M cocaine from alleged narco sub', url: SOURCE_LINKS.abc_cocaine, date: 'Jan 2026', org: 'ABC News', confidence: 'verified' },
+            { title: 'Fiji's cocaine seizure shows Pacific learning to fight back', url: SOURCE_LINKS.lowy_cocaine, date: 'Jan 2026', org: 'Lowy Institute', confidence: 'verified' }
+        ]
+    },
+    {
+        id: 'DEPORTEE_GANGS', name: 'Criminal Deportee Networks', type: 'distributor',
+        desc: '1,234 deported from NZ (2018-2021), 295 to Tonga/Samoa/Fiji. AU deported 57 Tongans in 2017. Establishing gang chapters across Pacific.',
+        r: 9, drugs: ['meth'],
+        sources: [
+            { title: 'UNODC Pacific TOCTA 2024: Deportee criminal networks', url: SOURCE_LINKS.unodc_pacific, date: '2024', org: 'UNODC', confidence: 'verified' },
+            { title: 'Problematising criminal deportation in the Pacific', url: SOURCE_LINKS.devpolicy_deportees, date: '2021', org: 'DevPolicy', confidence: 'reported' }
+        ]
+    },
+    {
+        id: 'LOCAL_SYND', name: 'Fiji Local Syndicates', type: 'distributor',
+        desc: 'Hybrid gangs and local criminal groups. UNODC identifies local/hybrid gangs as significant actors in Pacific drug markets.',
+        r: 8, drugs: ['meth', 'cocaine'],
+        sources: [
+            { title: 'UNODC Pacific TOCTA 2024: Local and hybrid gangs', url: SOURCE_LINKS.unodc_pacific, date: '2024', org: 'UNODC', confidence: 'reported' },
+            { title: 'Criminality in Fiji', url: SOURCE_LINKS.oc_index, date: '2023', org: 'OC Index', confidence: 'reported' }
+        ]
+    },
+    {
+        id: 'SUPERYACHT', name: 'Superyacht " rendezvous"', type: 'maritime',
+        desc: 'Witness testimony: meth brought ashore at Fantasy Island after rendezvous with superyacht on high seas. Arranged via satellite phone call Dec 2023.',
+        r: 11, drugs: ['meth'],
+        sources: [
+            { title: 'Fiji launches largest-ever drugs trial', url: SOURCE_LINKS.rnz_drugs, date: 'June 2025', org: 'RNZ', confidence: 'verified' },
+            { title: 'Seven guilty in Fiji's largest-ever meth trafficking trial', url: SOURCE_LINKS.abc_meth, date: 'July 2025', org: 'ABC News', confidence: 'verified' }
+        ]
+    },
+    {
+        id: 'NARCO_SUB', name: 'Semi-Submersible Vessel', type: 'maritime',
+        desc: 'Low-profile semi-submersible used in Jan 2026 Vatia cocaine bust. Ecuadorian voter IDs found in similar vessels in Solomon Islands waters (2024-25).',
+        r: 10, drugs: ['cocaine'],
+        sources: [
+            { title: 'Fiji police seize $780M cocaine from alleged narco sub', url: SOURCE_LINKS.abc_cocaine, date: 'Jan 2026', org: 'ABC News', confidence: 'verified' },
+            { title: 'Push for non-stop maritime surveillance', url: SOURCE_LINKS.islands_surveillance, date: 'May 2026', org: 'Islands Business', confidence: 'reported' }
+        ]
+    },
+    {
+        id: 'CONT_SHIP', name: 'Container Shipping', type: 'maritime',
+        desc: 'Primary Pacific cargo vector. 80%+ of cargo by ship. "Rip on, rip off" methodology. Container tonnage: 1.7M → 4.2M tons (2000-2030).',
+        r: 10, drugs: ['meth', 'cocaine'],
+        sources: [
+            { title: 'Drug trafficking in the Pacific Islands: Maritime routes', url: SOURCE_LINKS.lowy_drugs, date: 'Feb 2022', org: 'Lowy Institute', confidence: 'reported' },
+            { title: 'Pacific Nations battle billion-dollar drug trade', url: SOURCE_LINKS.oco_drugs, date: 'Feb 2026', org: 'Oceania Customs', confidence: 'reported' }
+        ]
+    },
+    {
+        id: 'FISH_TRAWLER', name: 'Fishing Trawler Fleet', type: 'maritime',
+        desc: 'Disguised as legitimate fishing operations. Documented Pacific smuggling method. Concealment in frozen goods and industrial machinery.',
+        r: 8, drugs: ['meth'],
+        sources: [
+            { title: 'Drug trafficking in the Pacific Islands: Concealment methods', url: SOURCE_LINKS.lowy_drugs, date: 'Feb 2022', org: 'Lowy Institute', confidence: 'reported' },
+            { title: 'UNODC Pacific TOCTA 2024: Maritime trafficking', url: SOURCE_LINKS.unodc_pacific, date: '2024', org: 'UNODC', confidence: 'inferred' }
+        ]
+    },
+    {
+        id: 'PRIVATE_YACHT', name: 'Private Yacht Network', type: 'maritime',
+        desc: 'High-value cocaine transport. Luxury vessels used for Pacific crossings. Documented in multiple regional seizures.',
+        r: 7, drugs: ['cocaine'],
+        sources: [
+            { title: 'Drug trafficking in the Pacific Islands: Yacht smuggling', url: SOURCE_LINKS.lowy_drugs, date: 'Feb 2022', org: 'Lowy Institute', confidence: 'reported' },
+            { title: 'Pacific Nations battle billion-dollar drug trade', url: SOURCE_LINKS.oco_drugs, date: 'Feb 2026', org: 'Oceania Customs', confidence: 'reported' }
+        ]
+    },
+    {
+        id: 'FAST_BOAT', name: 'Fast Boat Transfers', type: 'maritime',
+        desc: 'Inter-island speedboat transfers. Used for "rip on, rip off" container operations and coastal distribution.',
+        r: 7, drugs: ['meth'],
+        sources: [
+            { title: 'Drug trafficking in the Pacific Islands: Fast boats', url: SOURCE_LINKS.lowy_drugs, date: 'Feb 2022', org: 'Lowy Institute', confidence: 'inferred' },
+            { title: 'Push for non-stop maritime surveillance', url: SOURCE_LINKS.islands_surveillance, date: 'May 2026', org: 'Islands Business', confidence: 'reported' }
+        ]
+    },
+    {
+        id: 'AIR_CARGO', name: 'Air Cargo / Passenger Mules', type: 'maritime',
+        desc: 'Nadi International Airport as entry point. Passenger mules and air cargo documented in regional drug flows.',
+        r: 6, drugs: ['cocaine'],
+        sources: [
+            { title: 'UNODC Pacific TOCTA 2024: Air trafficking routes', url: SOURCE_LINKS.unodc_pacific, date: '2024', org: 'UNODC', confidence: 'inferred' },
+            { title: 'Pacific Nations battle billion-dollar drug trade', url: SOURCE_LINKS.oco_drugs, date: 'Feb 2026', org: 'Oceania Customs', confidence: 'reported' }
+        ]
+    },
+    {
+        id: 'SUVA_CLUBS', name: 'Suva Nightclub Network', type: 'dealer',
+        desc: 'Urban nightlife distribution. Cash-heavy business operations used as laundering fronts. Documented retail pattern in Pacific cities.',
+        r: 7, drugs: ['meth', 'cocaine'],
+        sources: [
+            { title: 'UNODC Pacific TOCTA 2024: Urban retail markets', url: SOURCE_LINKS.unodc_pacific, date: '2024', org: 'UNODC', confidence: 'inferred' },
+            { title: 'Pacific countries confirm destination markets', url: SOURCE_LINKS.unodc_smart, date: 'Dec 2022', org: 'UNODC', confidence: 'reported' }
+        ]
+    },
+    {
+        id: 'TOURIST_RETAIL', name: 'Tourist District Retail', type: 'dealer',
+        desc: 'Nadi/Denarau resort area targeting. Tourism industry provides cover for cocaine distribution to high-value visitors.',
+        r: 7, drugs: ['cocaine'],
+        sources: [
+            { title: 'UNODC Pacific TOCTA 2024: Tourism exploitation', url: SOURCE_LINKS.unodc_pacific, date: '2024', org: 'UNODC', confidence: 'inferred' },
+            { title: 'Fiji's cocaine seizure shows Pacific learning to fight back', url: SOURCE_LINKS.lowy_cocaine, date: 'Jan 2026', org: 'Lowy Institute', confidence: 'inferred' }
+        ]
+    },
+    {
+        id: 'UNI_DEALERS', name: 'University / Youth Dealers', type: 'dealer',
+        desc: 'Campus-based distribution. Methamphetamine samples formed largest proportion of Fiji Police Forensics samples (2020-2022).',
+        r: 6, drugs: ['meth'],
+        sources: [
+            { title: 'Pacific countries confirm destination markets for synthetic drugs', url: SOURCE_LINKS.unodc_smart, date: 'Dec 2022', org: 'UNODC', confidence: 'verified' },
+            { title: 'UNODC Pacific TOCTA 2024: Youth markets', url: SOURCE_LINKS.unodc_pacific, date: '2024', org: 'UNODC', confidence: 'inferred' }
+        ]
+    },
+    {
+        id: 'STREET_GANGS', name: 'Street-Level Gangs', type: 'dealer',
+        desc: 'Neighborhood-level sales. Fiji drug arrests rose from 148 (2009) to ~1,400 (2018). Meth cases: 2 (2009) → 113 (2019).',
+        r: 6, drugs: ['meth'],
+        sources: [
+            { title: 'Drug trafficking in the Pacific Islands: Arrest statistics', url: SOURCE_LINKS.lowy_drugs, date: 'Feb 2022', org: 'Lowy Institute', confidence: 'verified' },
+            { title: 'Criminality in Fiji', url: SOURCE_LINKS.oc_index, date: '2023', org: 'OC Index', confidence: 'reported' }
+        ]
+    },
+    {
+        id: 'KAVA_BARS', name: 'Kava Bar / Community Network', type: 'dealer',
+        desc: 'Traditional venue cover. Community-based distribution using cultural gathering points. Documented Pacific pattern.',
+        r: 5, drugs: ['meth'],
+        sources: [
+            { title: 'UNODC Pacific TOCTA 2024: Community infiltration', url: SOURCE_LINKS.unodc_pacific, date: '2024', org: 'UNODC', confidence: 'inferred' },
+            { title: 'Regional Responses to Drug Trafficking in the Pacific', url: SOURCE_LINKS.usp_boister, date: '2021', org: 'USP', confidence: 'reported' }
+        ]
+    },
+    {
+        id: 'REAL_ESTATE', name: 'Real Estate Investment', type: 'laundering',
+        desc: 'Property purchases in Suva and Nadi. NZ Police observed investments in construction, infrastructure, real estate, shell companies.',
+        r: 9, drugs: ['meth', 'cocaine'],
+        sources: [
+            { title: 'UNODC Pacific TOCTA 2024: Money laundering methods', url: SOURCE_LINKS.unodc_pacific, date: '2024', org: 'UNODC', confidence: 'reported' },
+            { title: 'Corruption in New Zealand and the Pacific', url: SOURCE_LINKS.nz_customs, date: 'May 2025', org: 'NZ Customs', confidence: 'reported' }
+        ]
+    },
+    {
+        id: 'MONEY_REM', name: 'Money Remittance / Hawala', type: 'laundering',
+        desc: 'Hawala-style transfer networks. Pacific remittance channels exploited for illicit fund movement.',
+        r: 8, drugs: ['meth'],
+        sources: [
+            { title: 'UNODC Pacific TOCTA 2024: Remittance exploitation', url: SOURCE_LINKS.unodc_pacific, date: '2024', org: 'UNODC', confidence: 'inferred' },
+            { title: 'Corruption in New Zealand and the Pacific', url: SOURCE_LINKS.nz_customs, date: 'May 2025', org: 'NZ Customs', confidence: 'reported' }
+        ]
+    },
+    {
+        id: 'CASH_BUSINESS', name: 'Cash-Heavy Businesses', type: 'laundering',
+        desc: 'Nightclubs, casinos, restaurants. Front companies for laundering drug proceeds. Standard Pacific methodology.',
+        r: 8, drugs: ['cocaine'],
+        sources: [
+            { title: 'UNODC Pacific TOCTA 2024: Business front laundering', url: SOURCE_LINKS.unodc_pacific, date: '2024', org: 'UNODC', confidence: 'inferred' },
+            { title: 'Corruption in New Zealand and the Pacific', url: SOURCE_LINKS.nz_customs, date: 'May 2025', org: 'NZ Customs', confidence: 'reported' }
+        ]
+    },
+    {
+        id: 'TRADE_BASED', name: 'Trade-Based Laundering', type: 'laundering',
+        desc: 'Import-export companies. Over/under-invoicing. Documented as standard Pacific money laundering vector.',
+        r: 7, drugs: ['meth'],
+        sources: [
+            { title: 'UNODC Pacific TOCTA 2024: Trade-based laundering', url: SOURCE_LINKS.unodc_pacific, date: '2024', org: 'UNODC', confidence: 'reported' },
+            { title: 'Regional Responses to Drug Trafficking in the Pacific', url: SOURCE_LINKS.usp_boister, date: '2021', org: 'USP', confidence: 'reported' }
+        ]
+    },
+    {
+        id: 'FISI_NASARIO', name: 'Fisi Nasario & Viber Network', type: 'official',
+        desc: 'Director of Serious Organized Crime + 6 senior officers. Leaked Viber chats showed police coordinating with traffickers, concealing weapons, arranging payments, planning hits on informants.',
+        r: 12, drugs: ['meth', 'cocaine'],
+        sources: [
+            { title: 'Fiji Police Probe Senior Officers Over Alleged Links to Drug Traffickers', url: SOURCE_LINKS.occrp_police, date: '2025', org: 'OCCRP', confidence: 'verified' },
+            { title: 'Corruption in New Zealand and the Pacific', url: SOURCE_LINKS.nz_customs, date: 'May 2025', org: 'NZ Customs', confidence: 'verified' }
+        ]
+    },
+    {
+        id: 'PORT_CUSTOMS', name: 'Port / Customs Officers', type: 'official',
+        desc: 'Officer arrested scooping meth from Nadi crime scene (Jan 2024). Tonga senior customs official arrested facilitating trafficking. Port inspection bypass standard.',
+        r: 10, drugs: ['meth', 'cocaine'],
+        sources: [
+            { title: 'Corruption in New Zealand and the Pacific', url: SOURCE_LINKS.nz_customs, date: 'May 2025', org: 'NZ Customs', confidence: 'verified' },
+            { title: 'Fiji Police Probe Senior Officers', url: SOURCE_LINKS.occrp_police, date: '2025', org: 'OCCRP', confidence: 'verified' }
+        ]
+    },
+    {
+        id: 'POLICE_CMDR', name: 'Police Commanders', type: 'official',
+        desc: '33 drug-related cases involving 27 police officers (Jan 2023-Oct 2025). 4 officers charged in 2025, including 2 from disbanded Counter-Narcotics Bureau.',
+        r: 10, drugs: ['meth'],
+        sources: [
+            { title: 'Fiji Police Probe Senior Officers', url: SOURCE_LINKS.occrp_police, date: '2025', org: 'OCCRP', confidence: 'verified' },
+            { title: 'Corruption in New Zealand and the Pacific', url: SOURCE_LINKS.nz_customs, date: 'May 2025', org: 'NZ Customs', confidence: 'verified' }
+        ]
+    },
+    {
+        id: 'POLITICIAN', name: 'Political Protection Network', type: 'official',
+        desc: 'OC Index rates Fiji political leadership integrity as "dubious." Corruption "likely widespread." Anti-corruption agency "limited and somewhat ineffective."',
+        r: 9, drugs: ['meth', 'cocaine'],
+        sources: [
+            { title: 'Criminality in Fiji', url: SOURCE_LINKS.oc_index, date: '2023', org: 'OC Index', confidence: 'reported' },
+            { title: 'UNODC Pacific TOCTA 2024: Governance vulnerabilities', url: SOURCE_LINKS.unodc_pacific, date: '2024', org: 'UNODC', confidence: 'inferred' }
+        ]
+    }
+];
+
+// Connections based on documented relationships
+const links = [
+    { source: 'SAM_GOR', target: 'JUSTIN_HO', strength: 3 },
+    { source: 'SAM_GOR', target: 'CHINA_PREC', strength: 3 },
+    { source: 'SAM_GOR', target: 'NADI_RING', strength: 3 },
+    { source: 'SINALOA_CARTEL', target: 'NADI_RING', strength: 3 },
+    { source: 'SINALOA_CARTEL', target: 'VATIA_CREW', strength: 3 },
+    { source: 'SINALOA_CARTEL', target: 'FIJI_REBELS', strength: 2 },
+    { source: 'CHINA_PREC', target: 'SAM_GOR', strength: 3 },
+    { source: 'CHINA_PREC', target: 'NADI_RING', strength: 2 },
+    { source: 'AU_OMCG', target: 'FIJI_REBELS', strength: 3 },
+    { source: 'AU_OMCG', target: 'DEPORTEE_GANGS', strength: 3 },
+    { source: 'NZ_GANGS', target: 'DEPORTEE_GANGS', strength: 2 },
+    { source: 'NZ_GANGS', target: 'LOCAL_SYND', strength: 2 },
+    { source: 'ECUADOR_CARTEL', target: 'VATIA_CREW', strength: 3 },
+    { source: 'ECUADOR_CARTEL', target: 'NARCO_SUB', strength: 3 },
+    { source: 'JUSTIN_HO', target: 'NADI_RING', strength: 3 },
+    { source: 'JUSTIN_HO', target: 'DAVID_HERITAGE', strength: 3 },
+    { source: 'JUSTIN_HO', target: 'SUPERYACHT', strength: 3 },
+    { source: 'JUSTIN_HO', target: 'REAL_ESTATE', strength: 3 },
+    { source: 'DAVID_HERITAGE', target: 'NADI_RING', strength: 3 },
+    { source: 'DAVID_HERITAGE', target: 'CONT_SHIP', strength: 2 },
+    { source: 'CHINESE_REST', target: 'SAM_GOR', strength: 2 },
+    { source: 'CHINESE_REST', target: 'CONT_SHIP', strength: 2 },
+    { source: 'FIJI_REBELS', target: 'NADI_RING', strength: 2 },
+    { source: 'FIJI_REBELS', target: 'STREET_GANGS', strength: 2 },
+    { source: 'FIJI_REBELS', target: 'CASH_BUSINESS', strength: 2 },
+    { source: 'NADI_RING', target: 'SUVA_CLUBS', strength: 3 },
+    { source: 'NADI_RING', target: 'UNI_DEALERS', strength: 2 },
+    { source: 'NADI_RING', target: 'STREET_GANGS', strength: 3 },
+    { source: 'NADI_RING', target: 'MONEY_REM', strength: 3 },
+    { source: 'VATIA_CREW', target: 'TOURIST_RETAIL', strength: 3 },
+    { source: 'VATIA_CREW', target: 'NARCO_SUB', strength: 3 },
+    { source: 'VATIA_CREW', target: 'CASH_BUSINESS', strength: 2 },
+    { source: 'DEPORTEE_GANGS', target: 'LOCAL_SYND', strength: 3 },
+    { source: 'DEPORTEE_GANGS', target: 'STREET_GANGS', strength: 3 },
+    { source: 'LOCAL_SYND', target: 'KAVA_BARS', strength: 2 },
+    { source: 'LOCAL_SYND', target: 'STREET_GANGS', strength: 2 },
+    { source: 'SUPERYACHT', target: 'CONT_SHIP', strength: 2 },
+    { source: 'SUPERYACHT', target: 'NADI_RING', strength: 3 },
+    { source: 'NARCO_SUB', target: 'PRIVATE_YACHT', strength: 2 },
+    { source: 'NARCO_SUB', target: 'FAST_BOAT', strength: 2 },
+    { source: 'CONT_SHIP', target: 'FISH_TRAWLER', strength: 2 },
+    { source: 'CONT_SHIP', target: 'PORT_CUSTOMS', strength: 3 },
+    { source: 'FISH_TRAWLER', target: 'FAST_BOAT', strength: 2 },
+    { source: 'PRIVATE_YACHT', target: 'TOURIST_RETAIL', strength: 3 },
+    { source: 'PRIVATE_YACHT', target: 'AIR_CARGO', strength: 2 },
+    { source: 'FAST_BOAT', target: 'NADI_RING', strength: 2 },
+    { source: 'AIR_CARGO', target: 'TOURIST_RETAIL', strength: 2 },
+    { source: 'SUVA_CLUBS', target: 'UNI_DEALERS', strength: 2 },
+    { source: 'SUVA_CLUBS', target: 'CASH_BUSINESS', strength: 3 },
+    { source: 'TOURIST_RETAIL', target: 'CASH_BUSINESS', strength: 3 },
+    { source: 'UNI_DEALERS', target: 'STREET_GANGS', strength: 2 },
+    { source: 'STREET_GANGS', target: 'KAVA_BARS', strength: 2 },
+    { source: 'REAL_ESTATE', target: 'MONEY_REM', strength: 2 },
+    { source: 'REAL_ESTATE', target: 'TRADE_BASED', strength: 2 },
+    { source: 'MONEY_REM', target: 'CASH_BUSINESS', strength: 2 },
+    { source: 'CASH_BUSINESS', target: 'TRADE_BASED', strength: 2 },
+    { source: 'FISI_NASARIO', target: 'NADI_RING', strength: 3 },
+    { source: 'FISI_NASARIO', target: 'VATIA_CREW', strength: 2 },
+    { source: 'FISI_NASARIO', target: 'POLICE_CMDR', strength: 3 },
+    { source: 'PORT_CUSTOMS', target: 'CONT_SHIP', strength: 3 },
+    { source: 'PORT_CUSTOMS', target: 'FISI_NASARIO', strength: 2 },
+    { source: 'POLICE_CMDR', target: 'NADI_RING', strength: 3 },
+    { source: 'POLICE_CMDR', target: 'STREET_GANGS', strength: 2 },
+    { source: 'POLITICIAN', target: 'FISI_NASARIO', strength: 2 },
+    { source: 'POLITICIAN', target: 'REAL_ESTATE', strength: 2 },
+    { source: 'POLITICIAN', target: 'POLICE_CMDR', strength: 2 }
+];
+
+
+// ===== D3 SETUP =====
+const width = window.innerWidth;
+const height = window.innerHeight;
+
+const svg = d3.select('#canvas-container')
+    .append('svg')
+    .attr('width', width)
+    .attr('height', height)
+    .attr('viewBox', [0, 0, width, height]);
+
+const defs = svg.append('defs');
+
+const glowFilter = defs.append('filter')
+    .attr('id', 'glow')
+    .attr('x', '-50%').attr('y', '-50%')
+    .attr('width', '200%').attr('height', '200%');
+glowFilter.append('feGaussianBlur').attr('stdDeviation', '3').attr('result', 'coloredBlur');
+const feMerge = glowFilter.append('feMerge');
+feMerge.append('feMergeNode').attr('in', 'coloredBlur');
+feMerge.append('feMergeNode').attr('in', 'SourceGraphic');
+
+const strongGlow = defs.append('filter')
+    .attr('id', 'strong-glow')
+    .attr('x', '-100%').attr('y', '-100%')
+    .attr('width', '300%').attr('height', '300%');
+strongGlow.append('feGaussianBlur').attr('stdDeviation', '6').attr('result', 'coloredBlur');
+const strongMerge = strongGlow.append('feMerge');
+strongMerge.append('feMergeNode').attr('in', 'coloredBlur');
+strongMerge.append('feMergeNode').attr('in', 'SourceGraphic');
+
+const g = svg.append('g');
+
+// Rotation state
+let isRotating = true;
+let rotationAngle = 0;
+let rotationSpeed = 0.12;
+let isDragging = false;
+let lastMouseAngle = 0;
+const centerX = width / 2;
+const centerY = height / 2;
+let currentScale = 0.55;
+
+function updateTransform() {
+    g.attr('transform', `translate(${centerX},${centerY}) scale(${currentScale}) rotate(${rotationAngle}) translate(${-centerX},${-centerY})`);
+}
+
+const zoom = d3.zoom()
+    .scaleExtent([0.1, 4])
+    .on('zoom', (event) => {
+        currentScale = event.transform.k;
+        updateTransform();
+    });
+
+svg.call(zoom)
+   .on('mousedown', startDrag)
+   .on('mousemove', doDrag)
+   .on('mouseup', endDrag)
+   .on('touchstart', startDrag)
+   .on('touchmove', doDrag)
+   .on('touchend', endDrag);
+
+function startDrag(event) {
+    isDragging = true;
+    isRotating = false;
+    document.getElementById('rotationToggle').classList.remove('active');
+    document.querySelector('#rotationToggle span').textContent = 'Paused';
+    const pt = d3.pointer(event, svg.node());
+    lastMouseAngle = Math.atan2(pt[1] - centerY, pt[0] - centerX) * 180 / Math.PI;
+}
+
+function doDrag(event) {
+    if (!isDragging) return;
+    const pt = d3.pointer(event, svg.node());
+    const mouseAngle = Math.atan2(pt[1] - centerY, pt[0] - centerX) * 180 / Math.PI;
+    rotationAngle += mouseAngle - lastMouseAngle;
+    lastMouseAngle = mouseAngle;
+    updateTransform();
+}
+
+function endDrag() {
+    isDragging = false;
+}
+
+function autoRotate() {
+    if (isRotating && !isDragging) {
+        rotationAngle += rotationSpeed;
+        updateTransform();
+    }
+    requestAnimationFrame(autoRotate);
+}
+
+document.getElementById('rotationToggle').addEventListener('click', function() {
+    isRotating = !isRotating;
+    this.classList.toggle('active');
+    const span = this.querySelector('span');
+    span.textContent = isRotating ? 'Auto-Rotating' : 'Paused';
+});
+
+const simulation = d3.forceSimulation(nodes)
+    .force('link', d3.forceLink(links).id(d => d.id).distance(130).strength(0.5))
+    .force('charge', d3.forceManyBody().strength(-450))
+    .force('center', d3.forceCenter(width / 2, height / 2))
+    .force('collision', d3.forceCollide().radius(d => d.r + 12))
+    .force('x', d3.forceX(width / 2).strength(0.05))
+    .force('y', d3.forceY(height / 2).strength(0.05));
+
+const link = g.append('g')
+    .selectAll('line')
+    .data(links)
+    .join('line')
+    .attr('class', 'link')
+    .attr('stroke-width', d => Math.sqrt(d.strength) * 0.8);
+
+const node = g.append('g')
+    .selectAll('.node')
+    .data(nodes)
+    .join('g')
+    .attr('class', 'node');
+
+node.filter(d => d.r >= 11)
+    .append('circle')
+    .attr('class', 'pulse-ring')
+    .attr('r', d => d.r + 5)
+    .attr('fill', 'none')
+    .attr('stroke', d => categories[d.type].color)
+    .attr('stroke-width', 1)
+    .attr('opacity', 0.25);
+
+node.append('circle')
+    .attr('class', 'node-glow')
+    .attr('r', d => d.r + 7)
+    .attr('fill', d => categories[d.type].color)
+    .attr('opacity', 0.12)
+    .attr('filter', 'url(#glow)');
+
+node.append('circle')
+    .attr('class', 'node-circle')
+    .attr('r', d => d.r)
+    .attr('fill', d => categories[d.type].color)
+    .attr('stroke', d => d3.color(categories[d.type].color).brighter(0.6))
+    .attr('stroke-width', 1.5)
+    .attr('filter', d => d.r >= 12 ? 'url(#strong-glow)' : 'url(#glow)');
+
+node.append('circle')
+    .attr('r', d => d.r * 0.35)
+    .attr('fill', 'white')
+    .attr('opacity', 0.25);
+
+node.append('text')
+    .attr('class', 'node-label')
+    .attr('dy', d => d.r + 16)
+    .text(d => d.name)
+    .style('opacity', d => d.r >= 10 ? 0.75 : 0);
+
+// ===== TOOLTIP & SIDE PANEL =====
+const tooltip = document.getElementById('tooltip');
+const sidePanel = document.getElementById('sidePanel');
+const panelOverlay = document.getElementById('panelOverlay');
+const panelContent = document.getElementById('sidePanelContent');
+const confidenceLabels = {
+    verified: 'COURT-VERIFIED',
+    reported: 'INTELLIGENCE-REPORTED',
+    inferred: 'PATTERN-INFERRED'
+};
+
+function openSidePanel(d) {
+    const confClass = `confidence-${d.sources[0].confidence}`;
+    const confLabel = confidenceLabels[d.sources[0].confidence] || 'DOCUMENTED';
+
+    let sourcesHtml = '';
+    d.sources.forEach(s => {
+        sourcesHtml += `
+            <div class="panel-source-item">
+                <div class="panel-source-title">${s.title}</div>
+                <div class="panel-source-meta">${s.org} &middot; ${s.date} &middot; ${s.confidence.toUpperCase()}</div>
+                <a href="${s.url}" target="_blank" class="panel-source-link">${s.url}</a>
+            </div>
+        `;
+    });
+
+    let tagsHtml = d.sources[0].tags ? d.sources[0].tags.map(t => `<span class="panel-tag">${t}</span>`).join('') : '';
+    if (!tagsHtml && d.drugs) {
+        tagsHtml = d.drugs.map(drug => `<span class="panel-tag">${drug.toUpperCase()}</span>`).join('');
+    }
+
+    panelContent.innerHTML = `
+        <h2>${d.name}</h2>
+        <div class="panel-type">${categories[d.type].label}</div>
+        <div class="tooltip-confidence ${confClass}">${confLabel}</div>
+        <div class="panel-desc">${d.desc}</div>
+        <div class="panel-section">
+            <div class="panel-section-title">Sources (${d.sources.length})</div>
+            ${sourcesHtml}
+        </div>
+        <div class="panel-section">
+            <div class="panel-section-title">Tags</div>
+            <div class="panel-tags">${tagsHtml}</div>
+        </div>
+    `;
+
+    sidePanel.classList.add('open');
+    panelOverlay.classList.add('open');
+}
+
+function closeSidePanel() {
+    sidePanel.classList.remove('open');
+    panelOverlay.classList.remove('open');
+}
+
+document.getElementById('sidePanelClose').addEventListener('click', closeSidePanel);
+panelOverlay.addEventListener('click', closeSidePanel);
+
+node.on('mouseenter', function(event, d) {
+    link.classed('highlighted', l => l.source.id === d.id || l.target.id === d.id);
+
+    const confClass = `confidence-${d.sources[0].confidence}`;
+    const confLabel = confidenceLabels[d.sources[0].confidence] || 'DOCUMENTED';
+
+    let sourcesPreview = d.sources.slice(0, 2).map(s => 
+        `<div style="margin-top:6px;font-size:0.65rem;color:#6a8a6a;">${s.org} &middot; ${s.date}</div>`
+    ).join('');
+
+    tooltip.innerHTML = `
+        <div class="tooltip-name">${d.name}</div>
+        <div class="tooltip-type">${categories[d.type].label}</div>
+        <div class="tooltip-confidence ${confClass}">${confLabel}</div>
+        <div class="tooltip-desc">${d.desc}</div>
+        <div class="tooltip-source">
+            <div class="tooltip-source-label">Sources</div>
+            ${sourcesPreview}
+            <div style="margin-top:6px;font-size:0.65rem;color:#5a7a5a;font-style:italic;">Click for full details & links</div>
+        </div>
+    `;
+    tooltip.classList.add('visible');
+
+    const x = event.clientX + 15;
+    const y = event.clientY - 10;
+    tooltip.style.left = Math.min(x, window.innerWidth - 360) + 'px';
+    tooltip.style.top = Math.min(y, window.innerHeight - 200) + 'px';
+})
+.on('mousemove', function(event) {
+    const x = event.clientX + 15;
+    const y = event.clientY - 10;
+    tooltip.style.left = Math.min(x, window.innerWidth - 360) + 'px';
+    tooltip.style.top = Math.min(y, window.innerHeight - 200) + 'px';
+})
+.on('mouseleave', function() {
+    link.classed('highlighted', false);
+    tooltip.classList.remove('visible');
+})
+.on('click', function(event, d) {
+    event.stopPropagation();
+    openSidePanel(d);
+});
+
+// ===== FILTERS =====
+let currentFilter = 'all';
+
+document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        currentFilter = this.dataset.filter;
+        applyFilter();
+    });
+});
+
+function applyFilter() {
+    if (currentFilter === 'all') {
+        node.style('opacity', 1);
+        link.style('opacity', 1);
+    } else if (currentFilter === 'meth') {
+        const methNodes = new Set(nodes.filter(n => n.drugs.includes('meth')).map(n => n.id));
+        node.style('opacity', d => methNodes.has(d.id) ? 1 : 0.1);
+        link.style('opacity', d => methNodes.has(d.source.id) && methNodes.has(d.target.id) ? 1 : 0.05);
+    } else if (currentFilter === 'cocaine') {
+        const cocaineNodes = new Set(nodes.filter(n => n.drugs.includes('cocaine')).map(n => n.id));
+        node.style('opacity', d => cocaineNodes.has(d.id) ? 1 : 0.1);
+        link.style('opacity', d => cocaineNodes.has(d.source.id) && cocaineNodes.has(d.target.id) ? 1 : 0.05);
+    } else if (currentFilter === 'maritime') {
+        node.style('opacity', d => d.type === 'maritime' || d.type === 'supplier' ? 1 : 0.1);
+        link.style('opacity', d => d.source.type === 'maritime' || d.target.type === 'maritime' ? 1 : 0.05);
+    } else if (currentFilter === 'corruption') {
+        node.style('opacity', d => d.type === 'official' || d.type === 'laundering' ? 1 : 0.1);
+        link.style('opacity', d => d.source.type === 'official' || d.target.type === 'official' || d.source.type === 'laundering' || d.target.type === 'laundering' ? 1 : 0.05);
+    }
+}
+
+// ===== SIMULATION =====
+simulation.on('tick', () => {
+    link
+        .attr('x1', d => d.source.x)
+        .attr('y1', d => d.source.y)
+        .attr('x2', d => d.target.x)
+        .attr('y2', d => d.target.y);
+    node.attr('transform', d => `translate(${d.x},${d.y})`);
+});
+
+window.addEventListener('resize', () => {
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    svg.attr('width', w).attr('height', h).attr('viewBox', [0, 0, w, h]);
+    simulation.force('center', d3.forceCenter(w / 2, h / 2));
+    simulation.alpha(0.3).restart();
+});
+
+// Start auto-rotation
+autoRotate();
+
+// Initial fit
+setTimeout(() => {
+    const bounds = g.node().getBBox();
+    const fullWidth = window.innerWidth;
+    const fullHeight = window.innerHeight;
+    const bWidth = bounds.width;
+    const bHeight = bounds.height;
+    const midX = bounds.x + bWidth / 2;
+    const midY = bounds.y + bHeight / 2;
+
+    if (bWidth > 0 && bHeight > 0) {
+        currentScale = Math.min(fullWidth / bWidth, fullHeight / bHeight) * 0.82;
+        updateTransform();
+    }
+}, 600);
+
+    </script>
+</body>
+</html>
