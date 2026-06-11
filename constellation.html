@@ -9,7 +9,7 @@
         @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { background: #050508; color: #e8e4dc; font-family: 'Inter', sans-serif; overflow: hidden; width: 100vw; height: 100vh; }
-        #canvas-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+        #canvas-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; overflow: hidden; }
         .starfield { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
         .star { position: absolute; background: white; border-radius: 50%; animation: twinkle 3s infinite ease-in-out; }
         @keyframes twinkle { 0%, 100% { opacity: 0.2; } 50% { opacity: 0.8; } }
@@ -75,7 +75,7 @@
         .panel-tag { padding: 3px 10px; border-radius: 12px; font-size: 0.7rem; background: rgba(212, 175, 100, 0.08); color: #a89878; border: 1px solid rgba(212, 175, 100, 0.12); }
         .panel-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 45; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
         .panel-overlay.open { opacity: 1; pointer-events: auto; }
-        svg { width: 100%; height: 100%; }
+        svg { width: 100%; height: 100%; display: block; }
         .link { stroke: rgba(212, 175, 100, 0.2); stroke-width: 0.8; transition: stroke-width 0.2s, stroke-opacity 0.2s; }
         .link.highlighted { stroke: rgba(212, 175, 100, 0.85); stroke-width: 1.8; }
         .node { cursor: pointer; }
@@ -565,9 +565,8 @@ const links = [
 
 
 // ===== D3 SETUP =====
-const width = window.innerWidth;
-const height = window.innerHeight;
-
+const width = window.innerWidth || document.documentElement.clientWidth || 800;
+const height = window.innerHeight || document.documentElement.clientHeight || 600;
 const svg = d3.select('#canvas-container')
     .append('svg')
     .attr('width', width)
@@ -875,22 +874,22 @@ autoRotate();
 
 // Fix iframe sizing on load
 function initSize() {
-    const w = window.innerWidth;
-    const h = window.innerHeight;
+    const w = document.documentElement.clientWidth || window.innerWidth;
+    const h = document.documentElement.clientHeight || window.innerHeight;
     svg.attr('width', w).attr('height', h).attr('viewBox', [0, 0, w, h]);
-    simulation.force('center', d3.forceCenter(w / 2, h / 2));
-    simulation.alpha(0.5).restart();
+    simulation
+        .force('center', d3.forceCenter(w / 2, h / 2))
+        .force('x', d3.forceX(w / 2).strength(0.05))
+        .force('y', d3.forceY(h / 2).strength(0.05))
+        .alpha(0.8).restart();
     setTimeout(() => {
-        const bounds = g.node().getBBox();
-        if (bounds.width > 0) {
-            currentScale = Math.min(w / bounds.width, h / bounds.height) * 0.82;
+        const b = g.node().getBBox();
+        if (b.width > 0) {
+            currentScale = Math.min(w / b.width, h / b.height) * 0.75;
             updateTransform();
         }
-    }, 800);
+    }, 1200);
 }
 
-if (document.readyState === 'complete') {
-    initSize();
-} else {
-    window.addEventListener('load', initSize);
-}
+setTimeout(initSize, 200);
+window.addEventListener('load', initSize);
