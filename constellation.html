@@ -873,22 +873,24 @@ window.addEventListener('resize', () => {
 // Start auto-rotation
 autoRotate();
 
-// Initial fit
-setTimeout(() => {
-    const bounds = g.node().getBBox();
-    const fullWidth = window.innerWidth;
-    const fullHeight = window.innerHeight;
-    const bWidth = bounds.width;
-    const bHeight = bounds.height;
-    const midX = bounds.x + bWidth / 2;
-    const midY = bounds.y + bHeight / 2;
+// Fix iframe sizing on load
+function initSize() {
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    svg.attr('width', w).attr('height', h).attr('viewBox', [0, 0, w, h]);
+    simulation.force('center', d3.forceCenter(w / 2, h / 2));
+    simulation.alpha(0.5).restart();
+    setTimeout(() => {
+        const bounds = g.node().getBBox();
+        if (bounds.width > 0) {
+            currentScale = Math.min(w / bounds.width, h / bounds.height) * 0.82;
+            updateTransform();
+        }
+    }, 800);
+}
 
-    if (bWidth > 0 && bHeight > 0) {
-        currentScale = Math.min(fullWidth / bWidth, fullHeight / bHeight) * 0.82;
-        updateTransform();
-    }
-}, 600);
-
-    </script>
-</body>
-</html>
+if (document.readyState === 'complete') {
+    initSize();
+} else {
+    window.addEventListener('load', initSize);
+}
