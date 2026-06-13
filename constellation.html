@@ -209,9 +209,9 @@ html,body{height:100%;overflow:hidden;background:#050508;color:#e8e4dc;font-fami
   <svg id="svg"></svg>
   <div class="c-stats">
     <div class="c-stats-grid">
-      <div class="c-stat"><div class="c-stat-val">36</div><div class="c-stat-lbl">Entities</div></div>
+      <div class="c-stat"><div class="c-stat-val">37</div><div class="c-stat-lbl">Entities</div></div>
       <div class="c-stat"><div class="c-stat-val">6</div><div class="c-stat-lbl">Sectors</div></div>
-      <div class="c-stat"><div class="c-stat-val">90</div><div class="c-stat-lbl">Connections</div></div>
+      <div class="c-stat"><div class="c-stat-val">92</div><div class="c-stat-lbl">Connections</div></div>
       <div class="c-stat"><div class="c-stat-val">0.31</div><div class="c-stat-lbl">Density</div></div>
     </div>
     <div class="c-divider"></div>
@@ -224,7 +224,7 @@ html,body{height:100%;overflow:hidden;background:#050508;color:#e8e4dc;font-fami
   </div>
   <div class="c-legend">
     <div class="c-legend-title">Legend &middot; Scroll to Zoom &middot; Click for Sources</div>
-    <div class="c-legend-item"><div class="c-legend-dot" style="background:#d4af64"></div><span>Int'l Suppliers</span><span class="c-legend-count">7</span></div>
+    <div class="c-legend-item"><div class="c-legend-dot" style="background:#d4af64"></div><span>Int'l Suppliers</span><span class="c-legend-count">8</span></div>
     <div class="c-legend-item"><div class="c-legend-dot" style="background:#e85d5d"></div><span>Fiji Distributors</span><span class="c-legend-count">9</span></div>
     <div class="c-legend-item"><div class="c-legend-dot" style="background:#5da8e8"></div><span>Maritime Transport</span><span class="c-legend-count">7</span></div>
     <div class="c-legend-item"><div class="c-legend-dot" style="background:#5de8a8"></div><span>Local Retail</span><span class="c-legend-count">5</span></div>
@@ -280,6 +280,14 @@ const categories = {
     official: { color: colors.official, label: 'Corrupt Officials' }
 };
 const nodes = [
+    { id: 'UWSA', name: 'United Wa State Army', type: 'supplier',
+        desc: 'Myanmar-based ethnic armed group operating in the Golden Triangle (Myanmar/Laos/Thailand border). Described by UNODC as the world\'s largest methamphetamine producer. Controls vast jungle lab complexes in Shan State, Myanmar. Supplies Sam Gor with bulk meth for Asia-Pacific distribution. Operates with de facto autonomy from the Myanmar state. The Golden Triangle produced an estimated 1,800 tonnes of meth in 2023 (UNODC). Chinese chemical companies supply the precursor chemicals that UWSA labs convert into finished product.',
+        r: 11, drugs: ['meth'],
+        sources: [
+            { title: 'UNODC Pacific TOCTA 2024: Golden Triangle production, UWSA, Sam Gor supply chain', url: 'https://www.unodc.org/roseap/uploads/documents/2024/TOCTA_Pacific_2024.pdf', date: '2024', org: 'UNODC', confidence: 'verified' },
+            { title: 'UNODC Synthetic Drugs in East and Southeast Asia 2024: UWSA as dominant meth producer', url: 'https://www.unodc.org/roseap/', date: '2024', org: 'UNODC', confidence: 'verified' }
+        ]
+    },
     { id: 'SAM_GOR', name: 'Sam Gor Syndicate', type: 'supplier', desc: 'Also known as The Company. The largest drug syndicate in the Asia-Pacific, made up of five Hong Kong triads: 14K, Bamboo Union, Big Circle Boys, Sun Yee On, and Wo Shing Wo. Led by China-born Canadian Tse Chi Lop (nickname: Sam Gor, Brother Number Three in Cantonese), arrested in Amsterdam in 2021 and extradited to Australia in 2022. UNODC estimated Sam Gor earned up to $17 billion from meth trafficking in 2018 alone and controls 40-70% of the Asia-Pacific meth market. Allies include Australian OMCGs and Japanese Yakuza. The former head was jailed in Melbourne in December 2025 for 16 years. UNODC warns the supply chain continues despite leadership arrests.', r: 14, drugs: ['meth'], sources: [{ title: 'UNODC Pacific TOCTA 2024: Sam Gor identified as dominant regional syndicate', url: SOURCE_LINKS.unodc_pacific, date: '2024', org: 'UNODC', confidence: 'verified' }, { title: 'Drug trafficking in the Pacific Islands', url: SOURCE_LINKS.lowy_drugs, date: 'Feb 2022', org: 'Lowy Institute', confidence: 'reported' }] },
     { id: 'SINALOA_CARTEL', name: 'Mexican Cartel Network', type: 'supplier', desc: 'Fiji police commissioner confirmed seized meth "originated in Mexico." Cartels identified as orchestrating importations into Pacific.', r: 12, drugs: ['meth', 'cocaine'], sources: [{ title: 'UNODC Pacific TOCTA 2024: Mexican cartels orchestrating meth importations', url: SOURCE_LINKS.unodc_pacific, date: '2024', org: 'UNODC', confidence: 'verified' }, { title: "Fiji's cocaine seizure shows Pacific learning to fight back", url: SOURCE_LINKS.lowy_cocaine, date: 'Jan 2026', org: 'Lowy Institute', confidence: 'reported' }] },
     { id: 'CHINA_PREC', name: 'Chinese Precursor Suppliers', type: 'supplier', desc: 'Chinese chemical companies selling precursor chemicals to Pacific. UNODC identifies Asian chemical companies as key enablers.', r: 10, drugs: ['meth'], sources: [{ title: 'UNODC Pacific TOCTA 2024: Asian chemical companies supplying precursors', url: SOURCE_LINKS.unodc_pacific, date: '2024', org: 'UNODC', confidence: 'reported' }, { title: 'Pacific countries confirm destination markets for synthetic drugs', url: SOURCE_LINKS.unodc_smart, date: 'Dec 2022', org: 'UNODC', confidence: 'verified' }] },
@@ -287,7 +295,7 @@ const nodes = [
     { id: 'NZ_GANGS', name: 'NZ Organised Crime', type: 'supplier', desc: 'Head Hunters active in Cook Islands. NZ deportees establishing gang chapters. Trans-Tasman distribution partnerships documented.', r: 9, drugs: ['meth'], sources: [{ title: 'UNODC Pacific TOCTA 2024: NZ organised crime networks', url: SOURCE_LINKS.unodc_pacific, date: '2024', org: 'UNODC', confidence: 'reported' }, { title: 'Problematising criminal deportation in the Pacific', url: SOURCE_LINKS.devpolicy_deportees, date: '2021', org: 'DevPolicy', confidence: 'reported' }] },
     { id: 'ECUADOR_CARTEL', name: 'Ecuadorian Traffickers', type: 'supplier', desc: '4 Ecuadorian nationals arrested in Jan 2026 Vatia cocaine bust. Used semi-submersible vessel. Direct link to South American production.', r: 10, drugs: ['cocaine'], sources: [{ title: 'Fiji police seize $780M cocaine from alleged narco sub', url: SOURCE_LINKS.abc_cocaine, date: 'Jan 2026', org: 'ABC News', confidence: 'verified' }, { title: "Fiji's cocaine seizure shows Pacific learning to fight back", url: SOURCE_LINKS.lowy_cocaine, date: 'Jan 2026', org: 'Lowy Institute', confidence: 'verified' }] },
     { id: 'SAM_AMINE', name: 'Sam Amine', type: 'supplier',
-        desc: 'Sydney-based Australian national. Described by Justice Aluthge as the drug kingpin who directed Justin Ho. Alleged architect of the 4.15-tonne meth importation from outside Fiji. Acquitted of possession charges in Fiji in 2022. Arrested in Sydney in 2024 on separate drug and firearm charges; pleaded guilty. Not yet charged in Fiji for the 2024 meth case. Fiji Police are actively pursuing trial in Fiji. ACP Waqa: "We will only rest once we charge those responsible."',
+        desc: 'Sydney-based Australian national. Described by Justice Aluthge as the drug kingpin who directed Justin Ho. Alleged architect of the 4.15-tonne meth importation from outside Fiji. Supplier: Mexico\'s Sinaloa cartel, with a Chinese syndicate (likely the 14K triad, part of Sam Gor) also involved in the supply chain, per the Global Initiative against Transnational Organised Crime. Acquitted of possession charges in Fiji in 2022. Arrested in Sydney in 2024 on separate drug and firearm charges; pleaded guilty. Not yet charged in Fiji for the 2024 meth case. Fiji Police actively pursuing trial in Fiji. ACP Waqa: "We will only rest once we charge those responsible."',
         r: 13, drugs: ['meth'],
         sources: [
             { title: 'Justice Aluthge sentencing remarks: Ho took instructions from Sam Amine, the drug kingpin', url: 'https://www.fijivillage.com/news/Mastermind-Justin-Ho-sentenced-to-life-imprisonment-after-2B-meth-bust-48x5fr/', date: 'Aug 2025', org: 'Fiji Village', confidence: 'verified' },
@@ -325,6 +333,8 @@ const nodes = [
     { id: 'POLITICIAN', name: 'Political Protection Network', type: 'official', desc: 'OC Index rates Fiji political leadership integrity as "dubious." Corruption "likely widespread." Anti-corruption agency "limited and somewhat ineffective."', r: 9, drugs: ['meth', 'cocaine'], sources: [{ title: 'Criminality in Fiji', url: SOURCE_LINKS.oc_index, date: '2023', org: 'OC Index', confidence: 'reported' }, { title: 'UNODC Pacific TOCTA 2024: Governance vulnerabilities', url: SOURCE_LINKS.unodc_pacific, date: '2024', org: 'UNODC', confidence: 'inferred' }] }
 ];
 const links = [
+    { source: 'UWSA', target: 'SAM_GOR', strength: 3 },
+    { source: 'CHINA_PREC', target: 'UWSA', strength: 3 },
     { source: 'SAM_AMINE', target: 'JUSTIN_HO', strength: 3 },
     { source: 'SAM_AMINE', target: 'NADI_RING', strength: 3 },
     { source: 'SAM_AMINE', target: 'REAL_ESTATE', strength: 2 },
