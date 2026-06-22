@@ -209,10 +209,10 @@ html,body{height:100%;overflow:hidden;background:#050508;color:#e8e4dc;font-fami
   <svg id="svg"></svg>
   <div class="c-stats">
     <div class="c-stats-grid">
-      <div class="c-stat"><div class="c-stat-val">37</div><div class="c-stat-lbl">Entities</div></div>
+      <div class="c-stat"><div class="c-stat-val">39</div><div class="c-stat-lbl">Entities</div></div>
       <div class="c-stat"><div class="c-stat-val">6</div><div class="c-stat-lbl">Sectors</div></div>
-      <div class="c-stat"><div class="c-stat-val">92</div><div class="c-stat-lbl">Connections</div></div>
-      <div class="c-stat"><div class="c-stat-val">0.31</div><div class="c-stat-lbl">Density</div></div>
+      <div class="c-stat"><div class="c-stat-val">97</div><div class="c-stat-lbl">Connections</div></div>
+      <div class="c-stat"><div class="c-stat-val">0.13</div><div class="c-stat-lbl">Density</div></div>
     </div>
     <div class="c-divider"></div>
     <div class="c-stats-grid">
@@ -224,8 +224,8 @@ html,body{height:100%;overflow:hidden;background:#050508;color:#e8e4dc;font-fami
   </div>
   <div class="c-legend">
     <div class="c-legend-title">Legend &middot; Scroll to Zoom &middot; Click for Sources</div>
-    <div class="c-legend-item"><div class="c-legend-dot" style="background:#d4af64"></div><span>Int'l Suppliers</span><span class="c-legend-count">8</span></div>
-    <div class="c-legend-item"><div class="c-legend-dot" style="background:#e85d5d"></div><span>Fiji Distributors</span><span class="c-legend-count">9</span></div>
+    <div class="c-legend-item"><div class="c-legend-dot" style="background:#d4af64"></div><span>Int'l Suppliers</span><span class="c-legend-count">9</span></div>
+    <div class="c-legend-item"><div class="c-legend-dot" style="background:#e85d5d"></div><span>Fiji Distributors</span><span class="c-legend-count">10</span></div>
     <div class="c-legend-item"><div class="c-legend-dot" style="background:#5da8e8"></div><span>Maritime Transport</span><span class="c-legend-count">7</span></div>
     <div class="c-legend-item"><div class="c-legend-dot" style="background:#5de8a8"></div><span>Local Retail</span><span class="c-legend-count">5</span></div>
     <div class="c-legend-item"><div class="c-legend-dot" style="background:#c85de8"></div><span>Money Laundering</span><span class="c-legend-count">4</span></div>
@@ -294,6 +294,24 @@ const nodes = [
     { id: 'AU_OMCG', name: 'Australian OMCGs', type: 'supplier', desc: 'Comanchero, Rebels, Bandidos, Hells Angels. 90 to 140 members travelling to Pacific (2016-18). Fiji Rebels chapter established 2012.', r: 11, drugs: ['meth', 'cocaine'], sources: [{ title: 'UNODC Pacific TOCTA 2024: OMCG expansion across Pacific', url: SOURCE_LINKS.unodc_pacific, date: '2024', org: 'UNODC', confidence: 'verified' }, { title: 'Drug trafficking in the Pacific Islands: OMCG networks', url: SOURCE_LINKS.lowy_drugs, date: 'Feb 2022', org: 'Lowy Institute', confidence: 'reported' }] },
     { id: 'NZ_GANGS', name: 'NZ Organised Crime', type: 'supplier', desc: 'Head Hunters active in Cook Islands. NZ deportees establishing gang chapters. Trans-Tasman distribution partnerships documented.', r: 9, drugs: ['meth'], sources: [{ title: 'UNODC Pacific TOCTA 2024: NZ organised crime networks', url: SOURCE_LINKS.unodc_pacific, date: '2024', org: 'UNODC', confidence: 'reported' }, { title: 'Problematising criminal deportation in the Pacific', url: SOURCE_LINKS.devpolicy_deportees, date: '2021', org: 'DevPolicy', confidence: 'reported' }] },
     { id: 'ECUADOR_CARTEL', name: 'Ecuadorian Traffickers', type: 'supplier', desc: '4 Ecuadorian nationals arrested in Jan 2026 Vatia cocaine bust. Used semi-submersible vessel. Direct link to South American production.', r: 10, drugs: ['cocaine'], sources: [{ title: 'Fiji police seize $780M cocaine from alleged narco sub', url: SOURCE_LINKS.abc_cocaine, date: 'Jan 2026', org: 'ABC News', confidence: 'verified' }, { title: "Fiji's cocaine seizure shows Pacific learning to fight back", url: SOURCE_LINKS.lowy_cocaine, date: 'Jan 2026', org: 'Lowy Institute', confidence: 'verified' }] },
+    { id: 'ALAMEDDINE', name: 'Alameddine Crime Network', type: 'supplier',
+        desc: 'Sydney-based organised crime syndicate primarily involving members of the Alameddine family. Engaged in drug importation, supply, extortion, and violent enforcement across Western Sydney. Mentored the KVT syndicate, a group of young Fijian men who became a street-level force. NSW Police describe KVT as regularly used as muscle by the Alameddines. As of 2024, an ongoing feud with the Brothers for Life (Hamzy family) has led to at least 11 shooting deaths. Sam Amine has been reported as connected to the Alameddine network (NSW Police court statement). Note: this is an intelligence-reported connection, not a court finding in Fiji proceedings.',
+        r: 11, drugs: ['meth', 'cocaine'],
+        sources: [
+            { title: 'NSW Police told court Amine was connected to Alameddine network and KVT gang', url: 'https://pmn.co.nz/read/law-and-order/fiji-hunts-australian-kingpin-over-record-meth-bust-linked-to-pacific-drug-routes', date: 'Apr 2026', org: 'PMN NZ / ABC', confidence: 'reported' },
+            { title: 'Alameddine crime network — Wikipedia: KVT used as muscle, 11 deaths in Hamzy feud', url: 'https://en.wikipedia.org/wiki/Alameddine_crime_network', date: '2024', org: 'Wikipedia / NSW Police', confidence: 'reported' },
+            { title: 'KVT syndicate mentored by Alameddine crime family — street-level drug and violence operations', url: 'https://fijisun.com.fj/news/nation/93m-drug-bust-hits-fijian-gang', date: '2025', org: 'Fiji Sun', confidence: 'reported' }
+        ]
+    },
+    { id: 'KVT', name: 'KVT Syndicate', type: 'distributor',
+        desc: 'Street gang of mostly young Fijian men based in Western Sydney. Grew from a search for protection and belonging in tough Sydney neighbourhoods; mentored by the Alameddine crime family into a drug, firearms, debt collection and violent assault operation. KVT leader Joseph Vokai charged in 2022 with conspiracy to murder and directing a criminal group. Jale Aukerea, KVT-linked and convicted in the Nadi meth case, received 50 years — the court-verified operational link between KVT and the Fiji trafficking network. In 2025, two KVT-linked men (Aisea Vatuwaqa and Cyspian Buadomo) were arrested in Western Sydney for attempting to import 128 kg of cocaine worth $93 million, connected to the same Nadi meth network. Note: Aukerea-KVT link is reported; his Nadi conviction is court-verified.',
+        r: 10, drugs: ['meth', 'cocaine'],
+        sources: [
+            { title: 'Fiji Sun: KVT syndicate, Aukerea conviction, $93M cocaine bust Western Sydney', url: 'https://fijisun.com.fj/news/nation/93m-drug-bust-hits-fijian-gang', date: '2025', org: 'Fiji Sun', confidence: 'reported' },
+            { title: 'Fiji Times: Aukerea 50-year sentence, top-tier offender in Nadi meth case', url: 'https://www.fijitimes.com.fj/jale-aukerea-jailed-for-50-years-non-parole-period-set-at-25-years/', date: 'Aug 2025', org: 'Fiji Times', confidence: 'verified' },
+            { title: 'Wikipedia/NSW Police: Joseph Vokai charged, KVT as Alameddine muscle', url: 'https://en.wikipedia.org/wiki/Alameddine_crime_network', date: '2022', org: 'NSW Police', confidence: 'reported' }
+        ]
+    },
     { id: 'SAM_AMINE', name: 'Sam Amine', type: 'supplier',
         desc: 'Sydney-based Australian national. Described by Justice Aluthge as the drug kingpin who directed Justin Ho. Alleged architect of the 4.15-tonne meth importation from outside Fiji. Supplier: Mexico\'s Sinaloa cartel, with a Chinese syndicate (likely the 14K triad, part of Sam Gor) also involved in the supply chain, per the Global Initiative against Transnational Organised Crime. Acquitted of possession charges in Fiji in 2022. Arrested in Sydney in 2024 on separate drug and firearm charges; pleaded guilty. Not yet charged in Fiji for the 2024 meth case. Fiji Police actively pursuing trial in Fiji. ACP Waqa: "We will only rest once we charge those responsible."',
         r: 13, drugs: ['meth'],
@@ -335,6 +353,10 @@ const nodes = [
 const links = [
     { source: 'UWSA', target: 'SAM_GOR', strength: 3 },
     { source: 'CHINA_PREC', target: 'UWSA', strength: 3 },
+    { source: 'ALAMEDDINE', target: 'KVT', strength: 3 },
+    { source: 'ALAMEDDINE', target: 'SAM_AMINE', strength: 2 },
+    { source: 'KVT', target: 'NADI_RING', strength: 3 },
+    { source: 'KVT', target: 'SAM_AMINE', strength: 2 },
     { source: 'SAM_AMINE', target: 'JUSTIN_HO', strength: 3 },
     { source: 'SAM_AMINE', target: 'NADI_RING', strength: 3 },
     { source: 'SAM_AMINE', target: 'REAL_ESTATE', strength: 2 },
